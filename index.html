@@ -24,7 +24,11 @@ html {
   
     <script>
       UnityLoader.instantiate("unityContainer", "Build/MREsult.json"); 
-	  console.log('ipad using? - %s', device.ipad())
+	  if(!device.ipad())
+	  {
+	  document.getElementByTadName("body").height = "0px";
+	  };
+	  
     </script>
   </head>
   <body >
