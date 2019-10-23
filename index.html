@@ -2,6 +2,7 @@
 <html lang="en-us">
   <head>
     <meta charset="utf-8">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="apple-mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-status-bar-style"   content="black" />
@@ -26,7 +27,7 @@ html {
       UnityLoader.instantiate("unityContainer", "Build/MREsult.json"); 
 	  if(!device.ipad())
 	  {
-	  document.getElementsByTagName("body")[0].style.display = "none";
+	  $('body').hide();
 	  };
 	  
     </script>
