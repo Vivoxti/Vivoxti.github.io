@@ -25,17 +25,20 @@ html {
   
     <script>
       UnityLoader.instantiate("unityContainer", "Build/MREsult.json"); 
-	  if(!device.ipad())
-	  {
-	  console.log("q");
-	  $("body").fadeIn(2000);
-	  };
+
 	  
     </script>
   </head>
-  <body >
+  <body id="mainbody" >
     <div id="unityContainer" style="width: 1024px; height: 748px; margin: auto"></div>
     
   </body>
-  
+  <script>
+  	  if(!device.ipad())
+	  {
+	  console.log("q");
+	  document.getElementById("mainbody").hidden = true;
+	  alert( "Откройте приложение на IPad Mini" );
+	  };
+  </script>
 </html>
