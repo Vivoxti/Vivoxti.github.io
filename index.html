@@ -7,7 +7,8 @@
 	<meta name="apple-mobile-web-app-status-bar-style"   content="black" />
 	<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
-    <title>Unity WebGL Player | Manchkin Unit</title>
+	<script src="https://unpkg.com/current-device/umd/current-device.min.js"></script>
+    <title>Manchkin Unit</title>
     <script src="Build/UnityLoader.js"></script>
     <style>
     * {
@@ -23,6 +24,7 @@ html {
   
     <script>
       UnityLoader.instantiate("unityContainer", "Build/MREsult.json"); 
+	  console.log('device.mobile() === %s', device.mobile())
     </script>
   </head>
   <body >
