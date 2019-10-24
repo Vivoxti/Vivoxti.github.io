@@ -25,8 +25,6 @@ html {
   
     <script>
       UnityLoader.instantiate("unityContainer", "Build/MREsult.json"); 
-
-	  console.log(window.orientation);
     </script>
   </head>
   <body id="mainbody" >
@@ -40,7 +38,17 @@ html {
 	  document.getElementById("mainbody").hidden = true;
 	  alert( "Open page on IPad Mini using homescreen bookmark" );
 	  };
-	window.addEventListener("orientationchange", function() {
- }, false);
+window.addEventListener("orientationchange", function() {
+if(window.orientation == 0)
+{
+$("#unityContainer").height(1365);
+}
+else if (window.orientation === 90 || window.orientation === -90)
+
+{
+$("#unityContainer").height(748);
+}
+
+}, false);
   </script>
 </html>
