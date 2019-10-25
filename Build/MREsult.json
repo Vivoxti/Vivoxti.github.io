@@ -1,7 +1,7 @@
 {
-"companyName": "DefaultCompany",
+"companyName": "Vivoxti",
 "productName": "Manchkin Unit",
-"productVersion": "0.1",
+"productVersion": "1.0.3",
 "dataUrl": "MREsult.data.unityweb",
 "wasmCodeUrl": "MREsult.wasm.code.unityweb",
 "wasmFrameworkUrl": "MREsult.wasm.framework.unityweb",
