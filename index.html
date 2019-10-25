@@ -38,10 +38,17 @@ html {
 	  document.getElementById("mainbody").hidden = true;
 	  alert( "Open page on IPad Mini using homescreen bookmark" );
 	  };
+	  if(window.orientation == 0)
+	  {
+	  $("#unityContainer").height(1345);
+	  }
+	  
+	  
+	  
 window.addEventListener("orientationchange", function() {
 if(window.orientation == 0)
 {
-$("#unityContainer").height(1325);
+$("#unityContainer").height(1345);
 }
 else if (window.orientation === 90 || window.orientation === -90)
 
