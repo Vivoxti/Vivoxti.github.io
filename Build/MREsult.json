@@ -1,7 +1,7 @@
 {
 "companyName": "DefaultCompany",
 "productName": "Manchkin Unit",
-"productVersion": "1.4",
+"productVersion": "1.5",
 "dataUrl": "MREsult.data.unityweb",
 "wasmCodeUrl": "MREsult.wasm.code.unityweb",
 "wasmFrameworkUrl": "MREsult.wasm.framework.unityweb",
