@@ -148,7 +148,8 @@ html {
 	  };
 	  if(window.orientation == 0)
 	  {
-	 // $("#gameContainer").height(1345);
+	 $("#gameContainer").height(1004);
+$("#gameContainer").width(768);
 	  }
 	  
 	  
@@ -156,12 +157,14 @@ html {
 window.addEventListener("orientationchange", function() {
 if(window.orientation == 0)
 {
-//$("#gameContainer").height(1345);
+$("#gameContainer").height(1004);
+$("#gameContainer").width(768);
 }
 else if (window.orientation === 90 || window.orientation === -90)
 
 {
-//$("#gameContainer").height(748);
+$("#gameContainer").height(1024);
+$("#gameContainer").height(748);
 }
 
 }, false);
