@@ -47,11 +47,9 @@
       transition: 400ms linear;
     }
   </style>
-  <link rel="stylesheet" href="debug-console.css">
 </head>
 
 <body>
-  <script src="./debug-console.js"></script>
   <canvas id="unity-canvas"></canvas>
   <div id="unity-loading-bar">
     <div id="unity-progress-bar">
@@ -83,14 +81,12 @@
     var loadingBar = document.querySelector("#unity-loading-bar");
     var progressBar = document.querySelector("#unity-progress-bar");
 
-    var unityGame; // This can be used to access the application with .SendMessage() commands
     var script = document.createElement("script");
     script.src = loaderUrl;
     script.onload = function() {
       createUnityInstance(canvas, config, function(progress) {
         progressBar.style.width = 100 * progress + "%";
       }).then(function(unityInstance) {
-        unityGame = unityInstance;
         loadingBar.style.display = "none";
       }).catch(function(message) {
         alert(message);

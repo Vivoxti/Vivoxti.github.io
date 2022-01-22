@@ -1,8 +1,8 @@
-# Develop Unity Template
+# Responsive Unity Template
 
 `Source: https://github.com/JohannesDeml/UnityWebGL-LoadingTest`
 
-Responsive template for Unity 2020+ with togglable in-DOM Console. Makes development for mobile a lot easier, since accessing the console is really easy.
+Responsive template for Unity 2020+. Ready for publishing, with nice loading screen and responsive layout.
 
 
 
