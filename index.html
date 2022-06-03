@@ -1,100 +1,159 @@
 <!doctype html>
 <html>
-  <head>
-     <meta charset="utf-8">
+<head>
+    <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="viewport" content="initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#000000" />
-<link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
-<link rel="manifest" href="img/site.webmanifest">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#000000"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
+    <link rel="manifest" href="img/site.webmanifest">
     <title>Vivoxti</title>
-  </head>
+</head>
 
-  <style type="text/css">
-     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@500&family=Varela+Round&display=swap');
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-font-family: 'Noto Sans', sans-serif;
-}
+<style type="text/css">
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@500&family=Varela+Round&display=swap');
 
-input,
-textarea,
-button,
-select,
-a {
-  -webkit-tap-highlight-color: rgba(0,0,0,0);
-}
-body, html{
-    overflow-x: hidden;
-}
-body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background: #000000;
-}
+    * {
+        box-sizing: border-box;
+        padding: 0;
+        margin: 0;
+        font-family: 'Noto Sans', sans-serif;
+    }
 
-html {
-  background: #000000;
-}
-ul {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-margin: 5%;
-  gap: 30px;
-}
-ul li {
-  position: relative;
-  list-style: none;
-}
-ul li a {
-  font-size: 4em;
-  text-decoration: none;
-  letter-spacing: 2px;
-  line-height: 1em;
-  text-transform: uppercase;
-  color: transparent;
-  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.5);
-}
-ul li a::before {
-  content: attr(data-text);
-  position: absolute;
-  color: var(--clr);
-  width: 0;
-  overflow: hidden;
-  transition: 1s;
-  border-right: 8px solid var(--clr);
-  -webkit-text-stroke: 1px var(--clr);
-}
-ul li a:hover::before {
-  width: 100%;
-  filter: drop-shadow(0 0 25px var(--clr))
-}
-  </style>
-  <body>
-   <ul>
-  <li style="--clr:#00dc82">
-    <a href="/cv" data-text="&nbsp;CV">&nbsp;CV&nbsp;</a>
-  </li>
-  <li style="--clr:#ff6492">
-    <a href="/munchkin" data-text="&nbsp;Munchkin">&nbsp;Munchkin&nbsp;</a>
-  </li>
-  <li style="--clr:#ffdd1c">
-    <a href="https://github.com/Vivoxtl/Vivoxtl.github.io" data-text="&nbsp;Repository">&nbsp;Repository&nbsp;</a>
-  </li>
-  <li style="--clr:#00ade1">
-    <a href="https://linkedin.com/in/vivoxti" data-text="&nbsp;LinkedIn">&nbsp;LinkedIn&nbsp;</a>
-  </li>
-  <li style="--clr:#dc00d4">
-    <a href="mailto: catereiptsi@gmail.com" data-text="&nbsp;Contact">&nbsp;Contact&nbsp;</a>
-  </li>
-</ul>
-  </body>
+    input,
+    textarea,
+    button,
+    select,
+    a {
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    }
+
+    body, html {
+        overflow-x: hidden;
+    }
+
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: #000000;
+    }
+
+    html {
+        background: #000000;
+    }
+
+    ul {
+        margin-right: 8px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        gap: 30px;
+    }
+
+    ul li {
+        position: relative;
+        list-style: none;
+    }
+
+    ul li a {
+        text-decoration: none;
+        letter-spacing: 2px;
+        line-height: 1em;
+        text-transform: uppercase;
+        color: transparent;
+        -webkit-text-stroke: 1px rgba(255, 255, 255, 0.5);
+    }
+
+    ul li a::before {
+        content: attr(data-text);
+        position: absolute;
+        color: var(--clr);
+        width: 0;
+        overflow: hidden;
+        transition: 1s;
+        border-right: 8px solid var(--clr);
+        -webkit-text-stroke: 1px var(--clr);
+    }
+
+    ul li a:hover::before {
+        width: 100%;
+        filter: drop-shadow(0 0 25px var(--clr))
+    }
+
+    div {
+        margin: 7%;
+        max-width: 600px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .mobile_text {
+        font-size: 12vw;
+    }
+
+    .desktop_text {
+        font-size: 4em;
+    }
+</style>
+<body>
+<div>
+    <ul>
+        <li style="--clr:#00dc82">
+            <a href="/cv" data-text="&nbsp;CV">&nbsp;CV&nbsp;</a>
+        </li>
+        <li style="--clr:#ff6492">
+            <a href="/munchkin" data-text="&nbsp;Munchkin">&nbsp;Munchkin&nbsp;</a>
+        </li>
+        <li style="--clr:#ffdd1c">
+            <a href="https://github.com/Vivoxtl/Vivoxtl.github.io"
+               data-text="&nbsp;Repository">&nbsp;Repository&nbsp;</a>
+        </li>
+        <li style="--clr:#00ade1">
+            <a href="https://linkedin.com/in/vivoxti" data-text="&nbsp;LinkedIn">&nbsp;LinkedIn&nbsp;</a>
+        </li>
+        <li style="--clr:#dc00d4">
+            <a href="mailto: catereiptsi@gmail.com" data-text="&nbsp;Contact">&nbsp;Contact&nbsp;</a>
+        </li>
+    </ul>
+</div>
+</body>
+<script type="text/javascript">
+    var links = document.getElementsByTagName('a');
+    let mobile = "mobile_text";
+    let desktop = "desktop_text";
+
+    function setFontSize() {
+        if (window.innerHeight > window.innerWidth) {
+            for (let i = 0; i < links.length; i++) {
+                links[i].classList.add(mobile);
+                links[i].classList.remove(desktop);
+            }
+        } else {
+            for (let i = 0; i < links.length; i++) {
+                links[i].classList.add(desktop);
+                links[i].classList.remove(mobile);
+            }
+        }
+    }
+
+    window.addEventListener("load", function () {
+            setFontSize();
+        }
+        , false);
+
+    function reportWindowSize() {
+        setFontSize();
+    }
+
+    window.onresize = reportWindowSize;
+
+</script>
 </html>
