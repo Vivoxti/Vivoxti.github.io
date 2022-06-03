@@ -11,7 +11,75 @@
 <link rel="manifest" href="img/site.webmanifest">
     <title>Vivoxti</title>
   </head>
+
+  <style type="text/css">
+     @import url('https://fonts.googleapis.com/css2?family=Varela+Round&display=swap');
+     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@500&family=Varela+Round&display=swap');
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+font-family: 'Noto Sans', sans-serif;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #000000;
+}
+ul {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+ul li {
+  position: relative;
+  list-style: none;
+}
+ul li a {
+  font-size: 4em;
+  text-decoration: none;
+  letter-spacing: 2px;
+  line-height: 1em;
+  text-transform: uppercase;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.5);
+}
+ul li a::before {
+  content: attr(data-text);
+  position: absolute;
+  color: var(--clr);
+  width: 0;
+  overflow: hidden;
+  transition: 1s;
+  border-right: 8px solid var(--clr);
+  -webkit-text-stroke: 1px var(--clr);
+}
+ul li a:hover::before {
+  width: 100%;
+  filter: drop-shadow(0 0 25px var(--clr))
+}
+  </style>
   <body>
-   
+   <ul>
+  <li style="--clr:#00dc82">
+    <a href="/cv" data-text="&nbsp;CV">&nbsp;CV&nbsp;</a>
+  </li>
+  <li style="--clr:#ff6492">
+    <a href="/munchkin" data-text="&nbsp;Munchkin">&nbsp;Munchkin&nbsp;</a>
+  </li>
+  <li style="--clr:#ffdd1c">
+    <a href="https://github.com/Vivoxtl/Vivoxtl.github.io" data-text="&nbsp;Repository">&nbsp;Repository&nbsp;</a>
+  </li>
+  <li style="--clr:#00ade1">
+    <a href="https://linkedin.com/in/vivoxti" data-text="&nbsp;LinkedIn">&nbsp;LinkedIn&nbsp;</a>
+  </li>
+  <li style="--clr:#dc00d4">
+    <a href="mailto: catereiptsi@gmail.com" data-text="&nbsp;Contact">&nbsp;Contact&nbsp;</a>
+  </li>
+</ul>
   </body>
 </html>
