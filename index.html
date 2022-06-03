@@ -61,7 +61,7 @@
         list-style: none;
     }
 
-    ul li a {
+    .interactionElement {
         text-decoration: none;
         letter-spacing: 2px;
         line-height: 1em;
@@ -70,7 +70,7 @@
         -webkit-text-stroke: 1px rgba(255, 255, 255, 0.5);
     }
 
-    ul li a::before {
+    .interactionElement::before {
         content: attr(data-text);
         position: absolute;
         color: var(--clr);
@@ -81,7 +81,7 @@
         -webkit-text-stroke: 1px var(--clr);
     }
 
-    ul li a:hover::before {
+    .interactionElement:hover::before {
         width: 100%;
         filter: drop-shadow(0 0 25px var(--clr))
     }
@@ -107,45 +107,59 @@
 <div>
     <ul>
         <li style="--clr:#00dc82">
-            <a href="/cv" data-text="&nbsp;CV">&nbsp;CV&nbsp;</a>
+            <a class="interactionElement" href="/cv" data-text="&nbsp;CV">&nbsp;CV&nbsp;</a>
         </li>
         <li style="--clr:#ff6492">
-            <a href="/munchkin" data-text="&nbsp;Munchkin">&nbsp;Munchkin&nbsp;</a>
+            <a class="interactionElement" href="/munchkin" data-text="&nbsp;Munchkin">&nbsp;Munchkin&nbsp;</a>
         </li>
         <li style="--clr:#ffdd1c">
-            <a href="https://github.com/Vivoxtl/Vivoxtl.github.io"
-               data-text="&nbsp;Repository">&nbsp;Repository&nbsp;</a>
+            <a  class="interactionElement" href="https://github.com/Vivoxtl/Vivoxtl.github.io" data-text="&nbsp;Repository">&nbsp;Repository&nbsp;</a>
         </li>
         <li style="--clr:#00ade1">
-            <a href="https://linkedin.com/in/vivoxti" data-text="&nbsp;LinkedIn">&nbsp;LinkedIn&nbsp;</a>
+            <a class="interactionElement" href="https://linkedin.com/in/vivoxti" data-text="&nbsp;LinkedIn">&nbsp;LinkedIn&nbsp;</a>
         </li>
         <li style="--clr:#dc00d4">
-            <a href="mailto: catereiptsi@gmail.com" data-text="&nbsp;Contact">&nbsp;Contact&nbsp;</a>
+            <a class="interactionElement" href="mailto: catereiptsi@gmail.com" data-text="&nbsp;Contact">&nbsp;Contact&nbsp;</a>
         </li>
     </ul>
 </div>
 </body>
 <script type="text/javascript">
-    var links = document.getElementsByTagName('a');
-    let mobile = "mobile_text";
-    let desktop = "desktop_text";
+
+    function isTouchDevice() {
+        return (('ontouchstart' in window) ||
+            (navigator.maxTouchPoints > 0) ||
+            (navigator.msMaxTouchPoints > 0));
+    }
+
+
+    let links = document.getElementsByTagName('a');
+    let mobileClassName = "mobile_text";
+    let desktopClassName = "desktop_text";
+    let interactionClassName = "interactionElement";
 
     function setFontSize() {
         if (window.innerHeight > window.innerWidth) {
             for (let i = 0; i < links.length; i++) {
-                links[i].classList.add(mobile);
-                links[i].classList.remove(desktop);
+                links[i].classList.add(mobileClassName);
+                links[i].classList.remove(desktopClassName);
             }
         } else {
             for (let i = 0; i < links.length; i++) {
-                links[i].classList.add(desktop);
-                links[i].classList.remove(mobile);
+                links[i].classList.add(desktopClassName);
+                links[i].classList.remove(mobileClassName);
             }
         }
     }
 
     window.addEventListener("load", function () {
             setFontSize();
+            if(isTouchDevice())
+            {
+                for (let i = 0; i < links.length; i++) {
+                    links[i].classList.remove(interactionClassName);
+                }
+            }
         }
         , false);
 
