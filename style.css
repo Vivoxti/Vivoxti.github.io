@@ -1,0 +1,119 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@500&family=Varela+Round&display=swap');
+
+* {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+    font-family: 'Noto Sans', sans-serif;
+}
+
+input,
+textarea,
+button,
+select,
+a {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+body, html {
+    overflow-x: hidden;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: #000000;
+}
+
+html {
+    background: #000000;
+}
+
+ul {
+    white-space: nowrap;
+    margin-right: 8px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 30px;
+}
+
+ul li {
+    position: relative;
+    list-style: none;
+}
+
+ul li a {
+    text-decoration: none;
+    letter-spacing: 2px;
+    line-height: 1em;
+    text-transform: uppercase;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.5);
+}
+
+.interactionElementMobile::before {
+    content: attr(data-text);
+    position: absolute;
+    color: var(--clr);
+    width: 0;
+    overflow: hidden;
+    transition: 0s;
+    border-right: 8px solid var(--clr);
+    -webkit-text-stroke: 1px var(--clr);
+}
+
+.interactionElementMobileFirstAnimation::before {
+    width: 100%;
+    transition: 0.7s;
+    filter: drop-shadow(0 0 25px var(--clr))
+}
+
+.interactionElementMobileSecondAnimation::before {
+    width: 0;
+    transition: 0.7s;
+}
+
+.interactionElement::before {
+    content: attr(data-text);
+    position: absolute;
+    color: var(--clr);
+    width: 0;
+    overflow: hidden;
+    transition: 1s;
+    border-right: 8px solid var(--clr);
+    -webkit-text-stroke: 1px var(--clr);
+}
+
+.interactionElement:hover::before {
+    width: 100%;
+    filter: drop-shadow(0 0 25px var(--clr))
+}
+
+.div_desktop {
+    margin: 7%;
+    max-width: 560px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.div_mobile {
+    margin: 7%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.mobile_text {
+    font-size: 12vw;
+}
+
+.desktop_text {
+    font-size: 4em;
+}

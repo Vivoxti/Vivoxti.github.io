@@ -10,118 +10,9 @@
     <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
     <link rel="manifest" href="img/site.webmanifest">
+    <link rel="stylesheet" href="style.css">
     <title>Vivoxti</title>
 </head>
-
-<style type="text/css">
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@500&family=Varela+Round&display=swap');
-
-    * {
-        box-sizing: border-box;
-        padding: 0;
-        margin: 0;
-        font-family: 'Noto Sans', sans-serif;
-    }
-
-    input,
-    textarea,
-    button,
-    select,
-    a {
-        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-    }
-
-    body, html {
-        overflow-x: hidden;
-    }
-
-    body {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-        background: #000000;
-    }
-
-    html {
-        background: #000000;
-    }
-
-    ul {
-        white-space: nowrap;
-        margin-right: 8px;
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        gap: 30px;
-    }
-
-    ul li {
-        position: relative;
-        list-style: none;
-    }
-
-    ul li a {
-        text-decoration: none;
-        letter-spacing: 2px;
-        line-height: 1em;
-        text-transform: uppercase;
-        color: transparent;
-        -webkit-text-stroke: 1px rgba(255, 255, 255, 0.5);
-    }
-
-    .interactionElementMobile::before {
-        content: attr(data-text);
-        position: absolute;
-        color: var(--clr);
-        width: 0;
-        overflow: hidden;
-        border-right: 8px solid var(--clr);
-        -webkit-text-stroke: 1px var(--clr);
-    }
-
-    .interactionElement::before {
-        content: attr(data-text);
-        position: absolute;
-        color: var(--clr);
-        width: 0;
-        overflow: hidden;
-        transition: 1s;
-        border-right: 8px solid var(--clr);
-        -webkit-text-stroke: 1px var(--clr);
-    }
-
-    .interactionElement:hover::before {
-        width: 100%;
-        filter: drop-shadow(0 0 25px var(--clr))
-    }
-
-    .div_desktop {
-        margin: 7%;
-        max-width: 560px;
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .div_mobile {
-        margin: 7%;
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .mobile_text {
-        font-size: 12vw;
-    }
-
-    .desktop_text {
-        font-size: 4em;
-    }
-</style>
 <body>
 <div class="div_desktop">
     <ul>
@@ -129,10 +20,11 @@
             <a class="interactionElement" href="/cv" data-text="&nbsp;My Web CV">&nbsp;My Web CV&nbsp;</a>
         </li>
         <li style="--clr:#ff6492">
-            <a  class="interactionElement" href="https://github.com/Vivoxtl/Vivoxtl.github.io" data-text="&nbsp;Repository">&nbsp;Repository&nbsp;</a>
+            <a class="interactionElement" href="https://github.com/Vivoxtl/Vivoxtl.github.io"
+               data-text="&nbsp;Repository">&nbsp;Repository&nbsp;</a>
         </li>
         <li style="--clr:#ffdd1c">
-             <a class="interactionElement" href="/munchkin" data-text="&nbsp;Munchkin">&nbsp;Munchkin&nbsp;</a>
+            <a class="interactionElement" href="/munchkin" data-text="&nbsp;Munchkin">&nbsp;Munchkin&nbsp;</a>
         </li>
         <li style="--clr:#00ade1">
             <a class="interactionElement" href="https://linkedin.com/in/vivoxti" data-text="&nbsp;LinkedIn">&nbsp;LinkedIn&nbsp;</a>
@@ -143,67 +35,5 @@
     </ul>
 </div>
 </body>
-<script type="text/javascript">
-
-    function isTouchDevice() {
-        return (('ontouchstart' in window) ||
-            (navigator.maxTouchPoints > 0) ||
-            (navigator.msMaxTouchPoints > 0));
-    }
-
-
-    let links = document.getElementsByTagName('a');
-    let div = document.getElementsByTagName('div');
-    let mobileTextClassName = "mobile_text";
-    let desktopTextClassName = "desktop_text";
-
-    let mobileDivClassName = "div_mobile";
-    let desktopDivClassName = "div_desktop";
-
-    let interactionClassName = "interactionElement";
-    let interactionMobileClassName = "interactionElementMobile";
-
-    function setFontSize() {
-        if (window.innerHeight > window.innerWidth) {
-            for (let i = 0; i < links.length; i++) {
-                links[i].classList.add(mobileTextClassName);
-                links[i].classList.remove(desktopTextClassName);
-            }
-            div[0].classList.add(mobileDivClassName);
-            div[0].classList.remove(desktopDivClassName);
-        } else {
-            for (let i = 0; i < links.length; i++) {
-                links[i].classList.add(desktopTextClassName);
-                links[i].classList.remove(mobileTextClassName);
-            }
-            div[0].classList.add(desktopDivClassName);
-            div[0].classList.remove(mobileDivClassName);
-        }
-    }
-
-    function mobileInitializeAnimation()
-    {
-
-    }
-
-    window.addEventListener("load", function () {
-            setFontSize();
-            if(isTouchDevice())
-            {
-                for (let i = 0; i < links.length; i++) {
-                    links[i].classList.add(interactionMobileClassName);
-                    links[i].classList.remove(interactionClassName);
-                }
-                mobileInitializeAnimation();
-            }
-        }
-        , false);
-
-    function reportWindowSize() {
-        setFontSize();
-    }
-
-    window.onresize = reportWindowSize;
-
-</script>
+<script src="core.js"></script>
 </html>
