@@ -48,6 +48,7 @@
     }
 
     ul {
+        white-space: nowrap;
         margin-right: 8px;
         position: relative;
         display: flex;
@@ -70,7 +71,17 @@
         -webkit-text-stroke: 1px rgba(255, 255, 255, 0.5);
     }
 
-    ul li a::before {
+    .interactionElementMobile::before {
+        content: attr(data-text);
+        position: absolute;
+        color: var(--clr);
+        width: 0;
+        overflow: hidden;
+        border-right: 8px solid var(--clr);
+        -webkit-text-stroke: 1px var(--clr);
+    }
+
+    .interactionElement::before {
         content: attr(data-text);
         position: absolute;
         color: var(--clr);
@@ -88,7 +99,7 @@
 
     div {
         margin: 7%;
-        max-width: 600px;
+        max-width: 690px;
         width: 100%;
         display: flex;
         justify-content: center;
@@ -107,13 +118,13 @@
 <div>
     <ul>
         <li style="--clr:#00dc82">
-            <a class="interactionElement" href="/cv" data-text="&nbsp;CV">&nbsp;CV&nbsp;</a>
+            <a class="interactionElement" href="/cv" data-text="&nbsp;My Web CV">&nbsp;My Web CV&nbsp;</a>
         </li>
         <li style="--clr:#ff6492">
-            <a class="interactionElement" href="/munchkin" data-text="&nbsp;Munchkin">&nbsp;Munchkin&nbsp;</a>
+            <a  class="interactionElement" href="https://github.com/Vivoxtl/Vivoxtl.github.io" data-text="&nbsp;Repository">&nbsp;Repository&nbsp;</a>
         </li>
         <li style="--clr:#ffdd1c">
-            <a  class="interactionElement" href="https://github.com/Vivoxtl/Vivoxtl.github.io" data-text="&nbsp;Repository">&nbsp;Repository&nbsp;</a>
+             <a class="interactionElement" href="/munchkin" data-text="&nbsp;Munchkin">&nbsp;Munchkin&nbsp;</a>
         </li>
         <li style="--clr:#00ade1">
             <a class="interactionElement" href="https://linkedin.com/in/vivoxti" data-text="&nbsp;LinkedIn">&nbsp;LinkedIn&nbsp;</a>
@@ -137,6 +148,7 @@
     let mobileClassName = "mobile_text";
     let desktopClassName = "desktop_text";
     let interactionClassName = "interactionElement";
+    let interactionMobileClassName = "interactionElementMobile";
 
     function setFontSize() {
         if (window.innerHeight > window.innerWidth) {
@@ -152,13 +164,20 @@
         }
     }
 
+    function mobileInitializeAnimation()
+    {
+
+    }
+
     window.addEventListener("load", function () {
             setFontSize();
             if(isTouchDevice())
             {
                 for (let i = 0; i < links.length; i++) {
+                    links[i].classList.add(interactionMobileClassName);
                     links[i].classList.remove(interactionClassName);
                 }
+                mobileInitializeAnimation();
             }
         }
         , false);
