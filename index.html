@@ -97,9 +97,17 @@
         filter: drop-shadow(0 0 25px var(--clr))
     }
 
-    div {
+    .div_desktop {
         margin: 7%;
-        max-width: 690px;
+        max-width: 560px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .div_mobile {
+        margin: 7%;
         width: 100%;
         display: flex;
         justify-content: center;
@@ -115,7 +123,7 @@
     }
 </style>
 <body>
-<div>
+<div class="div_desktop">
     <ul>
         <li style="--clr:#00dc82">
             <a class="interactionElement" href="/cv" data-text="&nbsp;My Web CV">&nbsp;My Web CV&nbsp;</a>
@@ -145,22 +153,31 @@
 
 
     let links = document.getElementsByTagName('a');
-    let mobileClassName = "mobile_text";
-    let desktopClassName = "desktop_text";
+    let div = document.getElementsByTagName('div');
+    let mobileTextClassName = "mobile_text";
+    let desktopTextClassName = "desktop_text";
+
+    let mobileDivClassName = "div_mobile";
+    let desktopDivClassName = "div_desktop";
+
     let interactionClassName = "interactionElement";
     let interactionMobileClassName = "interactionElementMobile";
 
     function setFontSize() {
         if (window.innerHeight > window.innerWidth) {
             for (let i = 0; i < links.length; i++) {
-                links[i].classList.add(mobileClassName);
-                links[i].classList.remove(desktopClassName);
+                links[i].classList.add(mobileTextClassName);
+                links[i].classList.remove(desktopTextClassName);
             }
+            div[0].classList.add(mobileDivClassName);
+            div[0].classList.remove(desktopDivClassName);
         } else {
             for (let i = 0; i < links.length; i++) {
-                links[i].classList.add(desktopClassName);
-                links[i].classList.remove(mobileClassName);
+                links[i].classList.add(desktopTextClassName);
+                links[i].classList.remove(mobileTextClassName);
             }
+            div[0].classList.add(desktopDivClassName);
+            div[0].classList.remove(mobileDivClassName);
         }
     }
 
