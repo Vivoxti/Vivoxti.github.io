@@ -7,6 +7,7 @@ let mobileDivClassName = "div_mobile";
 let desktopDivClassName = "div_desktop";
 
 let interactionClassName = "interactionElement";
+let interactionInitializeClassName = "interactionElementInitialize";
 let interactionMobileClassName = "interactionElementMobile";
 
 let interactionMobileAnimationClassName1 = "interactionElementMobileFirstAnimation";
@@ -65,14 +66,24 @@ async function mobileInitializeAnimation() {
     }
 }
 
+async function InitializeDesktop() {
+    let delayInit = await delay(animationStartDelay);
+    for (let i = 0; i < links.length; i++) {
+        links[i].classList.remove(interactionInitializeClassName);
+        links[i].classList.add(interactionClassName);
+    }
+}
+
 window.addEventListener("load", function () {
         setFontSize();
         if (isTouchDevice()) {
             for (let i = 0; i < links.length; i++) {
+                links[i].classList.remove(interactionInitializeClassName);
                 links[i].classList.add(interactionMobileClassName);
-                links[i].classList.remove(interactionClassName);
             }
             mobileInitializeAnimation();
+        } else {
+            InitializeDesktop();
         }
     }
     , false);

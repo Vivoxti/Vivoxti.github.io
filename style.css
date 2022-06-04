@@ -77,6 +77,17 @@ ul li a {
     transition: 0.7s;
 }
 
+.interactionElementInitialize::before {
+    content: attr(data-text);
+    position: absolute;
+    color: var(--clr);
+    width: 0;
+    overflow: hidden;
+    transition: 0s;
+    border-right: 8px solid var(--clr);
+    -webkit-text-stroke: 1px var(--clr);
+}
+
 .interactionElement::before {
     content: attr(data-text);
     position: absolute;
