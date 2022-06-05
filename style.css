@@ -55,6 +55,14 @@ ul li a {
     -webkit-text-stroke: 1px rgba(255, 255, 255, 0.5);
 }
 
+div {
+    margin: 7%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .interactionElementMobile::before {
     content: attr(data-text);
     position: absolute;
@@ -105,20 +113,7 @@ ul li a {
 }
 
 .div_desktop {
-    margin: 7%;
     max-width: 560px;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.div_mobile {
-    margin: 7%;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
 }
 
 .mobile_text {

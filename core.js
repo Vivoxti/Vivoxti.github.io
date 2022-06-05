@@ -1,9 +1,9 @@
+//Init
 let links = document.getElementsByTagName('a');
 let div = document.getElementsByTagName('div');
 let mobileTextClassName = "mobile_text";
 let desktopTextClassName = "desktop_text";
 
-let mobileDivClassName = "div_mobile";
 let desktopDivClassName = "div_desktop";
 
 let interactionClassName = "interactionElement";
@@ -29,14 +29,12 @@ function delay(delayInMs) {
 }
 
 //Main
-
-function setFontSize() {
+function SetFontSize() {
     if (window.innerHeight > window.innerWidth) {
         for (let i = 0; i < links.length; i++) {
             links[i].classList.add(mobileTextClassName);
             links[i].classList.remove(desktopTextClassName);
         }
-        div[0].classList.add(mobileDivClassName);
         div[0].classList.remove(desktopDivClassName);
     } else {
         for (let i = 0; i < links.length; i++) {
@@ -44,15 +42,15 @@ function setFontSize() {
             links[i].classList.remove(mobileTextClassName);
         }
         div[0].classList.add(desktopDivClassName);
-        div[0].classList.remove(mobileDivClassName);
     }
 }
 
+//Animations
 let animationStartDelay = 1;
 let animationForEachElementDelay = 100;
 let animationHideDelay = 50;
 
-async function mobileInitializeAnimation() {
+async function MobileInitializeAnimation() {
     let delay1 = await delay(animationStartDelay);
     for (let i = 0; i < links.length; i++) {
         links[i].classList.add(interactionMobileAnimationClassName1);
@@ -75,21 +73,21 @@ async function InitializeDesktop() {
 }
 
 window.addEventListener("load", function () {
-        setFontSize();
+        SetFontSize();
         if (isTouchDevice()) {
             for (let i = 0; i < links.length; i++) {
                 links[i].classList.remove(interactionInitializeClassName);
                 links[i].classList.add(interactionMobileClassName);
             }
-            mobileInitializeAnimation();
+            MobileInitializeAnimation();
         } else {
             InitializeDesktop();
         }
     }
     , false);
 
-function reportWindowSize() {
-    setFontSize();
+function ReportWindowSize() {
+    SetFontSize();
 }
 
-window.onresize = reportWindowSize;
+window.onresize = ReportWindowSize;
