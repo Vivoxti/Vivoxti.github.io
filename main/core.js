@@ -4,8 +4,9 @@ let div = document.getElementsByTagName('div');
 let mobileTextClassName = "mobile_text";
 let desktopTextClassName = "desktop_text";
 
-let desktopDivClassName = "div_desktop";
-let desktopDivClassChangedParamType = "px";
+let mainContainerId = "div_desktop";
+let mainContainerDesktopParamType = "px";
+let mainContainerDefaultParamType = "100%";
 
 let interactionClassName = "interactionElement";
 let interactionInitializeClassName = "interactionElementInitialize";
@@ -36,26 +37,29 @@ function SetFontSize() {
             links[i].classList.add(mobileTextClassName);
             links[i].classList.remove(desktopTextClassName);
         }
-        div[0].classList.remove(desktopDivClassName);
     } else {
         for (let i = 0; i < links.length; i++) {
             links[i].classList.add(desktopTextClassName);
             links[i].classList.remove(mobileTextClassName);
         }
-        div[0].classList.add(desktopDivClassName);
     }
+    SetAdaptiveWidth();
 }
 
 function SetAdaptiveWidth() {
-    let maxWidth = links[0].offsetWidth;
-    for (let i = 1; i < links.length; i++) {
-        let elementWidth = links[i].offsetWidth;
-        if(elementWidth > maxWidth){
-            maxWidth = elementWidth;
+    let div_desktop_class = document.getElementById(mainContainerId);
+    let width = mainContainerDefaultParamType;
+    if (window.innerHeight <= window.innerWidth) {
+        let maxWidth = links[0].offsetWidth;
+        for (let i = 1; i < links.length; i++) {
+            let elementWidth = links[i].offsetWidth;
+            if(elementWidth > maxWidth){
+                maxWidth = elementWidth;
+            }
         }
+        width = `${maxWidth}${mainContainerDesktopParamType}`;
     }
-    let div_desktop_class = document.querySelector(`.${desktopDivClassName}`);
-    div_desktop_class.style.maxWidth = `${maxWidth}${desktopDivClassChangedParamType}`;
+    div_desktop_class.style.maxWidth = width;
 }
 
 //Animations
@@ -87,7 +91,6 @@ async function InitializeDesktop() {
 
 window.addEventListener("load", function () {
         SetFontSize();
-        SetAdaptiveWidth();
         if (isTouchDevice()) {
             for (let i = 0; i < links.length; i++) {
                 links[i].classList.remove(interactionInitializeClassName);

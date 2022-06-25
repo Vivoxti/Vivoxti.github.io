@@ -112,10 +112,6 @@ div {
     filter: drop-shadow(0 0 25px var(--clr))
 }
 
-.div_desktop {
-    max-width: 560px;
-}
-
 .mobile_text {
     font-size: 12vw;
 }
