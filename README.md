@@ -1,2 +1,2 @@
-# Vivoxtl.github.io
-![view](https://github.com/Vivoxtl/Vivoxtl.github.io/blob/master/main/img/readMeView.jpg)
+# Vivoxti.github.io
+![view](https://github.com/Vivoxti/Vivoxti.github.io/blob/master/main/img/readMeView.jpg)
