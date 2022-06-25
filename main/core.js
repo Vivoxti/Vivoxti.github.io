@@ -5,6 +5,7 @@ let mobileTextClassName = "mobile_text";
 let desktopTextClassName = "desktop_text";
 
 let desktopDivClassName = "div_desktop";
+let desktopDivClassChangedParamType = "px";
 
 let interactionClassName = "interactionElement";
 let interactionInitializeClassName = "interactionElementInitialize";
@@ -45,6 +46,18 @@ function SetFontSize() {
     }
 }
 
+function SetAdaptiveWidth() {
+    let maxWidth = links[0].offsetWidth;
+    for (let i = 1; i < links.length; i++) {
+        let elementWidth = links[i].offsetWidth;
+        if(elementWidth > maxWidth){
+            maxWidth = elementWidth;
+        }
+    }
+    let div_desktop_class = document.querySelector(`.${desktopDivClassName}`);
+    div_desktop_class.style.maxWidth = `${maxWidth}${desktopDivClassChangedParamType}`;
+}
+
 //Animations
 let animationStartDelay = 1;
 let animationForEachElementDelay = 100;
@@ -74,6 +87,7 @@ async function InitializeDesktop() {
 
 window.addEventListener("load", function () {
         SetFontSize();
+        SetAdaptiveWidth();
         if (isTouchDevice()) {
             for (let i = 0; i < links.length; i++) {
                 links[i].classList.remove(interactionInitializeClassName);
