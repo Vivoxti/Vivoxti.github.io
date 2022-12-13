@@ -7,20 +7,22 @@
     <title>пароль от планшета 681295</title>
   
 </head>
-<script>
-    if (!device.ipad()) {
-        document.getElementById("mainbody").hidden = true;
-        alert("Узреть подсказку с планшета лишь можно, возможность попросить пароль от планшета у Димы до начала 2023 года заблокирована");
-    }
 
-</script>
 <body id="mainbody">
-<iframe width="770" height="770"
+<iframe id="video" width="770" height="770"
 src="https://www.youtube.com/embed/WusgtcMh6Xg">
 </iframe>
 
 </body>
 
+<script>
+    if (!device.ipad()) {
+        document.getElementById("mainbody").hidden = true;
+        const video = document.getElementById("video");
+        video.remove();
+        alert("Узреть подсказку с планшета лишь можно, возможность попросить пароль от планшета у Димы до начала 2023 года заблокирована");
+    }
 
+</script>
 
 </html>
