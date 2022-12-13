@@ -9,7 +9,7 @@
          margin:0;
          }
          canvas{
-         background:#000;
+         background:#ffffffff;
          }
          #textdiv {
          height: 200px;
@@ -39,7 +39,7 @@
       <div>
          <canvas style="visibility: hidden;" id="canvas" ></canvas>
       </div>
-      <audio id="audio" controls loop>
+      <audio id="audio" controls loop preload="auto">
          <source src="audio.mp3" type="audio/mp3">
       </audio>
    </body>
@@ -118,7 +118,7 @@
               
               function paint() {
                   ctx.globalCompositeOperation = 'source-over';
-                  ctx.fillStyle = "rgba(0,0,0,0.2)";
+                  ctx.fillStyle = "rgba(0,0,0,0.1)";
                   ctx.fillRect(0, 0, w, h);
                   ctx.globalCompositeOperation = 'lighter';
                   for (var i=0; i<particles.length; i++) {
