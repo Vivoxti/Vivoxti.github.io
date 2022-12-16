@@ -29,7 +29,7 @@
          justify-content: center;}
       </style>
    </head>
-   <body>
+   <body id="mainbody">
       <div id="textdiv">
          <center>
             <input id="button" type="image" style="width:150px;height:150px;" src="button.png" onclick="play()">
@@ -44,6 +44,23 @@
       </audio>
    </body>
    <script>
+        console.log("КТО СМОТРИМ КОД СТРАНИЦЫ, ТОТ ЖУЛИК! БЫСТРО ЗАКРОЙ И НЕ ЖУЛЬНИЧАЙ БОЛЬШЕ)))");
+     let day = 30;
+      var today = new Date();   
+      
+      if (today.getFullYear() != 2022 || (today.getMonth()+1) != 12 || today.getDate() < day) {
+          document.getElementById("mainbody").hidden = true;
+
+          
+            var date2 = new Date("12/26/2022");
+            var timeDiff = Math.abs(date2.getTime() - today.getTime());
+            var diffDays = Math.ceil(timeDiff / (1000)); 
+            alert("Данная стадия ивента начинается через " +diffDays+" секунд");
+      }
+  
+
+
+
       function play() {
         var audio = document.getElementById("audio");
         audio.play();
@@ -187,3 +204,4 @@
               } 
    </script>
 </html>
+КТО СМОТРИМ КОД СТРАНИЦЫ, ТОТ ЖУЛИК! БЫСТРО ЗАКРОЙ И НЕ ЖУЛЬНИЧАЙ БОЛЬШЕ)))

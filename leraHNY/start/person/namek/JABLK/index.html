@@ -6,8 +6,25 @@
     <title>пароль от планшета 681295</title>
   
 </head>
-<body>
+<body id="mainbody">
 
 </body>
+ <script>
+            console.log("КТО СМОТРИТ КОД СТРАНИЦЫ, ТОТ ЖУЛИК! БЫСТРО ЗАКРОЙ И НЕ ЖУЛЬНИЧАЙ БОЛЬШЕ)))");
+      let day = 29;
+      var today = new Date();   
+      
+      if (today.getFullYear() != 2022 || (today.getMonth()+1) != 12 || today.getDate() < day) {
+          document.getElementById("mainbody").hidden = true;
 
+          
+            var date2 = new Date("12/26/2022");
+            var timeDiff = Math.abs(date2.getTime() - today.getTime());
+            var diffDays = Math.ceil(timeDiff / (1000)); 
+            alert("Данная стадия ивента начинается через " +diffDays+" секунд");
+      }
+
+      
+   </script>
 </html>
+КТО СМОТРИМ КОД СТРАНИЦЫ, ТОТ ЖУЛИК! БЫСТРО ЗАКРОЙ И НЕ ЖУЛЬНИЧАЙ БОЛЬШЕ)))
