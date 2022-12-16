@@ -11,19 +11,19 @@
 </body>
  <script>
            console.log("КТО СМОТРИТ КОД СТРАНИЦЫ, ТОТ ЖУЛИК! БЫСТРО ЗАКРОЙ И НЕ ЖУЛЬНИЧАЙ БОЛЬШЕ)))");
-      let day = 30;
-      var today = new Date();   
+    let dayLimit = 30;
+         var todayInfo = new Date();   
       
-      if (today.getFullYear() != 2022 || (today.getMonth()+1) != 12 || today.getDate() < day) {
-          document.getElementById("mainbody").hidden = true;
-          const video = document.getElementById("video");
-          video.remove();
-          
-            var date2 = new Date("12/26/2022");
-            var timeDiff = Math.abs(date2.getTime() - today.getTime());
-            var diffDays = Math.ceil(timeDiff / (1000)); 
-            alert("Данная стадия ивента начинается через " +diffDays+" секунд");
-      }
+    if (todayInfo.getFullYear() != 2022 || (todayInfo.getMonth()+1) != 12 || todayInfo.getDate() < dayLimit) {
+            document.getElementById("main").hidden = true;
+
+              document.getElementById("coolTimer").hidden = false;
+        }
+      
+        else{
+           var timer =  document.getElementById("coolTimer");
+            timer.remove()
+        }
       
    </script>
 </html>
