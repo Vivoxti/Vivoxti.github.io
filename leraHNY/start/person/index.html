@@ -1,91 +1,237 @@
-
 <!--КТО СМОТРИТ КОД СТРАНИЦЫ, ТОТ ЖУЛИК! БЫСТРО ЗАКРОЙ И НЕ ЖУЛЬНИЧАЙ БОЛЬШЕ)))-->
 <html lang="en-us">
-<head>
-    <meta charset="utf-8">
-    <title>пароль от планшета 681295</title>
-  <style>
-    body {
-  height: 100vh;
-  display: flex;
-  margin: 0;
-  background: linear-gradient(135deg, #295fd5, #9d8ce0);
-  align-items: center;
-  justify-content: center;
-  user-select: none;
-}
-
-.group {
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-}
-
-.item {
-  width: 15vw;
-  height: 75vh;
-  background-position: center;
-  background-size: 75vh;
-  margin: 1vw;
-  border-radius: 3vw;
-  display: inline-block;
-  cursor: pointer;
-}
-  </style>
-</head>
-<body id="mainbody">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.3/gsap.min.js"></script>
-<div class="group">
-  <div class="item" style="background-image: url(https://raw.githubusercontent.com/Vivoxti/Vivoxti.github.io/master/leraHNY/start/person/vadim2.jpg)"></div>
-  <div class="item" style="background-image: url(https://raw.githubusercontent.com/Vivoxti/Vivoxti.github.io/master/leraHNY/start/person/mama2.jpg)"></div>
-  <div class="item" style="background-image: url(https://raw.githubusercontent.com/Vivoxti/Vivoxti.github.io/master/leraHNY/start/person/vadim3.jpg)"></div>
-  <div class="item" style="background-image: url(https://raw.githubusercontent.com/Vivoxti/Vivoxti.github.io/master/leraHNY/start/person/mama1.jpg)"></div>
-  <div class="item" style="background-image: url(https://raw.githubusercontent.com/Vivoxti/Vivoxti.github.io/master/leraHNY/start/person/vadim1.jpg)"></div>
-</div>
-</body>
- <script>
-        console.log("КТО СМОТРИМ КОД СТРАНИЦЫ, ТОТ ЖУЛИК! БЫСТРО ЗАКРОЙ И НЕ ЖУЛЬНИЧАЙ БОЛЬШЕ)))");
-      let day = 7;
-      var today = new Date();   
+   <head>
+      <meta charset="utf-8">
+      <title>пароль от планшета 681295</title>
+      <style id="styleMain">
+         body {
+         height: 100vh;
+         display: flex;
+         margin: 0;
+         background: linear-gradient(135deg, #295fd5, #9d8ce0);
+         align-items: center;
+         justify-content: center;
+         user-select: none;
+         }
+         .group {
+         text-align: center;
+         white-space: nowrap;
+         overflow: hidden;
+         }
+         .item {
+         width: 15vw;
+         height: 75vh;
+         background-position: center;
+         background-size: 75vh;
+         margin: 1vw;
+         border-radius: 3vw;
+         display: inline-block;
+         cursor: pointer;
+         }
+      </style>
+      <style id="styleTimer">
+         /* general styling */
+         :root {
+         --smaller: .75;
+         }
+         * {
+         box-sizing: border-box;
+         margin: 0;
+         padding: 0;
+         }
+         html, body {
+         height: 100%;
+         margin: 0;
+         }
+         body {
+         align-items: center;
+         background-color: #ffd54f;
+         display: flex;
+         font-family: -apple-system, 
+         BlinkMacSystemFont, 
+         "Segoe UI", 
+         Roboto, 
+         Oxygen-Sans, 
+         Ubuntu, 
+         Cantarell, 
+         "Helvetica Neue", 
+         sans-serif;
+         }
+         .container {
+         color: #333;
+         margin: 0 auto;
+         text-align: center;
+         }
+         h1 {
+         font-weight: normal;
+         letter-spacing: .125rem;
+         text-transform: uppercase;
+         }
+         li {
+         display: inline-block;
+         font-size: 1.5em;
+         list-style-type: none;
+         padding: 1em;
+         text-transform: uppercase;
+         }
+         li span {
+         display: block;
+         font-size: 4.5rem;
+         }
+         .emoji {
+         display: none;
+         padding: 1rem;
+         }
+         .emoji span {
+         font-size: 4rem;
+         padding: 0 .5rem;
+         }
+         @media all and (max-width: 768px) {
+         h1 {
+         font-size: calc(1.5rem * var(--smaller));
+         }
+         li {
+         font-size: calc(1.125rem * var(--smaller));
+         }
+         li span {
+         font-size: calc(3.375rem * var(--smaller));
+         }
+         }
+      </style>
+   </head>
+   <body id="mainbody">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.3/gsap.min.js"></script>
+      <div class="container" id="coolTimer">
+         <h1 id="headline">Данная стадия ивента начинается через</h1>
+         <div id="countdown">
+            <ul>
+               <li><span id="days"></span>Дней</li>
+               <li><span id="hours"></span>Часов</li>
+               <li><span id="minutes"></span>Минут</li>
+               <li><span id="seconds"></span>Секунд</li>
+            </ul>
+         </div>
+         <div id="content" class="emoji">
+            <span>🥳</span>
+            <span>🎉</span>
+            <span>🎂</span>
+         </div>
+      </div>
+      <div id="main">
+         <div class="group">
+            <div class="item" style="background-image: url(https://raw.githubusercontent.com/Vivoxti/Vivoxti.github.io/master/leraHNY/start/person/vadim2.jpg)"></div>
+            <div class="item" style="background-image: url(https://raw.githubusercontent.com/Vivoxti/Vivoxti.github.io/master/leraHNY/start/person/mama2.jpg)"></div>
+            <div class="item" style="background-image: url(https://raw.githubusercontent.com/Vivoxti/Vivoxti.github.io/master/leraHNY/start/person/vadim3.jpg)"></div>
+            <div class="item" style="background-image: url(https://raw.githubusercontent.com/Vivoxti/Vivoxti.github.io/master/leraHNY/start/person/mama1.jpg)"></div>
+            <div class="item" style="background-image: url(https://raw.githubusercontent.com/Vivoxti/Vivoxti.github.io/master/leraHNY/start/person/vadim1.jpg)"></div>
+         </div>
+      </div>
+   </body>
+   <script>
+      console.log("КТО СМОТРИТ КОД СТРАНИЦЫ, ТОТ ЖУЛИК! БЫСТРО ЗАКРОЙ И НЕ ЖУЛЬНИЧАЙ БОЛЬШЕ)))");
+        let dayLimit = 27;
+         var todayInfo = new Date();   
+        
+         if (todayInfo.getFullYear() != 2022 || (todayInfo.getMonth()+1) != 12 || todayInfo.getDate() < dayLimit) {
+            document.getElementById("main").hidden = true;
       
-      if (today.getFullYear() != 2022 || (today.getMonth()+1) != 12 || today.getDate() < day) {
-          document.getElementById("mainbody").hidden = true;
-
-          
+              document.getElementById("coolTimer").hidden = false;
+      
+                var style =  document.getElementById("styleMain");
+            style.remove()
+        }
+      
+        else{
+          var style =  document.getElementById("styleTimer");
+            style.remove()
+           var timer =  document.getElementById("coolTimer");
+            timer.remove()
+        }
+      
+      
+      
+      
+      
+      
+      
+      const items = document.querySelectorAll('.item')
+      
+      const expand = (item, i) => {
+      items.forEach((it, ind) => {
+      if (i === ind) return
+      it.clicked = false
+      })
+      gsap.to(items, {
+      width: item.clicked ? '15vw' : '8vw',
+      duration: 2,
+      ease: 'elastic(1, .6)'
+      })
+      
+      item.clicked = !item.clicked
+      gsap.to(item, {
+      width: item.clicked ? '42vw' : '15vw',
+      duration: 2.5,
+      ease: 'elastic(1, .3)'
+      })
       }
       
-
-
-
-
-
-const items = document.querySelectorAll('.item')
-
-const expand = (item, i) => {
-  items.forEach((it, ind) => {
-    if (i === ind) return
-    it.clicked = false
-  })
-  gsap.to(items, {
-    width: item.clicked ? '15vw' : '8vw',
-    duration: 2,
-    ease: 'elastic(1, .6)'
-  })
-  
-  item.clicked = !item.clicked
-  gsap.to(item, {
-    width: item.clicked ? '42vw' : '15vw',
-    duration: 2.5,
-    ease: 'elastic(1, .3)'
-  })
-}
-
-items.forEach((item, i) => {
-  item.clicked = false
-  item.addEventListener('click', () => expand(item, i))
-})
-
-
+      items.forEach((item, i) => {
+      item.clicked = false
+      item.addEventListener('click', () => expand(item, i))
+      })
+      
+      
+   </script>
+   <script>
+      (function () {
+           let dayLimit = 27;
+            var todayInfo = new Date();   
+      
+      const second = 1000,
+          minute = second * 60,
+          hour = minute * 60,
+          day = hour * 24;
+      
+      //I'm adding this section so I don't have to keep updating this pen every year :-)
+      //remove this if you don't need it
+      let today = new Date(),
+        dd = String(today.getDate()).padStart(2, "0"),
+        mm = String(today.getMonth() + 1).padStart(2, "0"),
+        yyyy = today.getFullYear(),
+        nextYear = yyyy + 1,
+        dayMonth = "12/27/",
+        birthday = dayMonth + yyyy;
+      
+      today = mm + "/" + dd + "/" + yyyy;
+      if (today > birthday) {
+      birthday = dayMonth + nextYear;
+      }
+      //end
+      
+      const countDown = new Date(birthday).getTime(),
+        x = setInterval(function() {    
+      
+          const now = new Date().getTime(),
+                distance = countDown - now;
+      
+      if (todayInfo.getFullYear() != 2022 || (todayInfo.getMonth()+1) != 12 || todayInfo.getDate() < dayLimit) {
+            document.getElementById("days").innerText = Math.floor(distance / (day)),
+            document.getElementById("hours").innerText = Math.floor((distance % (day)) / (hour)),
+            document.getElementById("minutes").innerText = Math.floor((distance % (hour)) / (minute)),
+            document.getElementById("seconds").innerText = Math.floor((distance % (minute)) / second);
+      
+          //do something later when date is reached
+          if (distance < 0) {
+            document.getElementById("headline").innerText = "It's my birthday!";
+            document.getElementById("countdown").style.display = "none";
+            document.getElementById("content").style.display = "block";
+            clearInterval(x);
+          }
+        }
+          
+          //seconds
+        }, 0)
+      }());
    </script>
 </html>
 <!--КТО СМОТРИТ КОД СТРАНИЦЫ, ТОТ ЖУЛИК! БЫСТРО ЗАКРОЙ И НЕ ЖУЛЬНИЧАЙ БОЛЬШЕ)))-->
