@@ -409,7 +409,8 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #242836;
+  background-image: url('background.jpg');
+  background-size: contain;
   padding: 20px;
 }
 body .dribbble {
