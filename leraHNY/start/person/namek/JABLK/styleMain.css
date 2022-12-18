@@ -404,7 +404,7 @@ html {
 }
 
 body {
-  min-height: 100vh;
+  height: 97%;
   font-family: Roboto, Arial;
   display: flex;
   justify-content: center;
