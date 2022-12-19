@@ -1,363 +1,373 @@
-<!--КТО СМОТРИТ КОД СТРАНИЦЫ, ТОТ ЖУЛИК! БЫСТРО ЗАКРОЙ И НЕ ЖУЛЬНИЧАЙ БОЛЬШЕ)))-->
+ <!--КТО СМОТРИТ КОД СТРАНИЦЫ, ТОТ ЖУЛИК! БЫСТРО ЗАКРОЙ И НЕ ЖУЛЬНИЧАЙ БОЛЬШЕ)))-->
 <html lang="en-us">
-   <head>
-      <meta charset="utf-8">
-      <title>Что это за кнопка?</title>
-          <link rel="apple-touch-icon" sizes="180x180" href="https://raw.githubusercontent.com/Vivoxti/Vivoxti.github.io/master/leraHNY/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/Vivoxti/Vivoxti.github.io/master/leraHNY/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="https://raw.githubusercontent.com/Vivoxti/Vivoxti.github.io/master/leraHNY/favicon-16x16.png">
+<head>
+    <meta charset="utf-8">
+    <title>Что это за кнопка?</title>
+    <link href="https://raw.githubusercontent.com/Vivoxti/Vivoxti.github.io/master/leraHNY/apple-touch-icon.png" rel="apple-touch-icon"
+          sizes="180x180">
+    <link href="https://raw.githubusercontent.com/Vivoxti/Vivoxti.github.io/master/leraHNY/favicon-32x32.png" rel="icon" sizes="32x32"
+          type="image/png">
+    <link href="https://raw.githubusercontent.com/Vivoxti/Vivoxti.github.io/master/leraHNY/favicon-16x16.png" rel="icon" sizes="16x16"
+          type="image/png">
 
-        <style  id="styleTimer">
-      /* general styling */
-      :root {
-      --smaller: .75;
-      }
-      * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      }
-      html, body {
-      height: 100%;
-      margin: 0;
-      }
-      body {
-      align-items: center;
-      background-color: #ffd54f;
-      display: flex;
-      font-family: -apple-system, 
-      BlinkMacSystemFont, 
-      "Segoe UI", 
-      Roboto, 
-      Oxygen-Sans, 
-      Ubuntu, 
-      Cantarell, 
-      "Helvetica Neue", 
-      sans-serif;
-      }
-      .container {
-      color: #333;
-      margin: 0 auto;
-      text-align: center;
-      }
-      h1 {
-      font-weight: normal;
-      letter-spacing: .125rem;
-      text-transform: uppercase;
-      }
-      li {
-      display: inline-block;
-      font-size: 1.5em;
-      list-style-type: none;
-      padding: 1em;
-      text-transform: uppercase;
-      }
-      li span {
-      display: block;
-      font-size: 4.5rem;
-      }
-      .emoji {
-      display: none;
-      padding: 1rem;
-      }
-      .emoji span {
-      font-size: 4rem;
-      padding: 0 .5rem;
-      }
-       #audio {
-         height: 0px;
-         width: 0px;
-         }
-
-      @media all and (max-width: 768px) {
-      h1 {
-      font-size: calc(1.5rem * var(--smaller));
-      }
-      li {
-      font-size: calc(1.125rem * var(--smaller));
-      }
-      li span {
-      font-size: calc(3.375rem * var(--smaller));
-      }
-
-      }
-   </style>
-      <style id="styleMain">
-         body{
-         background:black;
-         overflow:hidden;
-         margin:0;
-         }
-         canvas{
-         background:#ffffffff;
-         }
-         #textdiv {
-         height: 200px;
-         width: 400px;
-         position: fixed;
-         top: 50%;
-         left: 50%;
-         margin-top: -100px;
-         margin-left: -200px;
-         display:flex;
-         align-items: center;
-         justify-content: center;
-         }
-         center {  
-         display:flex;
-         align-items: center;
-         justify-content: center;}
-      </style>
-   </head>
-   <body id="mainbody">
-    <div class="container" id="coolTimer">
-         <h1 id="headline">Данная стадия ивента начинается через</h1>
-         <div id="countdown">
-            <ul>
-               <li><span id="days"></span>Дней</li>
-               <li><span id="hours"></span>Часов</li>
-               <li><span id="minutes"></span>Минут</li>
-               <li><span id="seconds"></span>Секунд</li>
-            </ul>
-         </div>
-         <div id="content" class="emoji">
-            <span>🥳</span>
-            <span>🎉</span>
-            <span>🎂</span>
-         </div>
-      </div>
-      <div id="main">
-      <div id="textdiv">
-         <center>
-            <input id="button" type="image" style="width:150px;height:150px;" src="button.png" onclick="play()">
-            <h1 id="mainText"  style="color:#FFF1DD;font-family:verdana; display:none">С НОВЫМ ГОДОМ СОЛНЫШКО</h1>
-         </center>
-      </div>
-      <div>
-         <canvas style="visibility: hidden;" id="canvas" ></canvas>
-      </div>
-       </div>
-      <audio id="audio" controls loop preload="auto">
-         <source src="audio.mp3" type="audio/mp3">
-      </audio>
-   </body>
-   <script>
-       console.log("КТО СМОТРИТ КОД СТРАНИЦЫ, ТОТ ЖУЛИК! БЫСТРО ЗАКРОЙ И НЕ ЖУЛЬНИЧАЙ БОЛЬШЕ)))");
-      
-      let dayLimit = 31;
-         var todayInfo = new Date();   
-      
-    if (todayInfo.getFullYear() != 2022 || (todayInfo.getMonth()+1) != 12 || todayInfo.getDate() < dayLimit) {
-            document.getElementById("main").hidden = true;
-
-              document.getElementById("coolTimer").hidden = false;
-
-                var style =  document.getElementById("styleMain");
-            style.remove()
+    <style id="styleTimer">
+        /* general styling */
+        :root {
+            --smaller: .75;
         }
-      
-        else{
-          var style =  document.getElementById("styleTimer");
-            style.remove()
-           var timer =  document.getElementById("coolTimer");
-            timer.remove()
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
-  
+
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            align-items: center;
+            background-color: #ffd54f;
+            display: flex;
+            font-family: -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            Roboto,
+            Oxygen-Sans,
+            Ubuntu,
+            Cantarell,
+            "Helvetica Neue",
+            sans-serif;
+        }
+
+        .container {
+            color: #333;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        h1 {
+            font-weight: normal;
+            letter-spacing: .125rem;
+            text-transform: uppercase;
+        }
+
+        li {
+            display: inline-block;
+            font-size: 1.5em;
+            list-style-type: none;
+            padding: 1em;
+            text-transform: uppercase;
+        }
+
+        li span {
+            display: block;
+            font-size: 4.5rem;
+        }
+
+        .emoji {
+            display: none;
+            padding: 1rem;
+        }
+
+        .emoji span {
+            font-size: 4rem;
+            padding: 0 .5rem;
+        }
+
+        #audio {
+            height: 0;
+            width: 0;
+        }
+
+        @media all and (max-width: 768px) {
+            h1 {
+                font-size: calc(1.5rem * var(--smaller));
+            }
+
+            li {
+                font-size: calc(1.125rem * var(--smaller));
+            }
+
+            li span {
+                font-size: calc(3.375rem * var(--smaller));
+            }
+
+        }
+    </style>
+    <style id="styleMain">
+        body {
+            background: black;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        canvas {
+            background: #ffffffff;
+        }
+
+        #text {
+            height: 200px;
+            width: 400px;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            margin-top: -100px;
+            margin-left: -200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body id="main-body">
+<div class="container" id="coolTimer">
+    <h1 id="headline">Данная стадия ивента начинается через</h1>
+    <div id="countdown">
+        <ul>
+            <li><span id="days"></span>Дней</li>
+            <li><span id="hours"></span>Часов</li>
+            <li><span id="minutes"></span>Минут</li>
+            <li><span id="seconds"></span>Секунд</li>
+        </ul>
+    </div>
+    <div class="emoji" id="content">
+        <span>🥳</span>
+        <span>🎉</span>
+        <span>🎂</span>
+    </div>
+</div>
+<div id="main">
+    <div id="text">
+        <center>
+            <input id="button" onclick="play()" src="button.png" style="width:150px;height:150px;" type="image" alt="">
+            <h1 id="mainText" style="color:#FFF1DD;font-family:verdana,serif; display:none">С НОВЫМ ГОДОМ СОЛНЫШКО</h1>
+        </center>
+    </div>
+    <div>
+        <canvas id="canvas" style="visibility: hidden;"></canvas>
+    </div>
+</div>
+<audio controls id="audio" loop preload="auto">
+    <source src="audio.mp3" type="audio/mp3">
+</audio>
+</body>
+<script>
+    console.log("КТО СМОТРИТ КОД СТРАНИЦЫ, ТОТ ЖУЛИК! БЫСТРО ЗАКРОЙ И НЕ ЖУЛЬНИЧАЙ БОЛЬШЕ)))");
+
+    let dayLimit = 31;
+    let todayInfo = new Date();
+
+    if (todayInfo.getFullYear() !== 2022 || (todayInfo.getMonth() + 1) !== 12 || todayInfo.getDate() < dayLimit) {
+        document.getElementById("main").hidden = true;
+
+        document.getElementById("coolTimer").hidden = false;
+
+        let styleMain = document.getElementById("styleMain");
+        styleMain.remove()
+    } else {
+        let styleTimer = document.getElementById("styleTimer");
+        styleTimer.remove()
+        let timer = document.getElementById("coolTimer");
+        timer.remove()
+    }
 
 
-
-      function play() {
-        var audio = document.getElementById("audio");
+    function play() {
+        let audio = document.getElementById("audio");
         audio.play();
-      
-        var canvas = document.getElementById("canvas");
-        var mainText = document.getElementById("mainText");
-      
-          var button = document.getElementById("button");
-      
+
+        let canvas = document.getElementById("canvas");
+        let mainText = document.getElementById("mainText");
+
+        let button = document.getElementById("button");
+
         canvas.style.visibility = "visible";
         mainText.style.display = "inline";
-      
-         button.style.display = "none";
-      
-         document.title = "Поздравляю";
-      }
-   </script>
-   <script>
-      window.addEventListener("resize", resizeCanvas, false);
-              window.addEventListener("DOMContentLoaded", onLoad, false);
-              
-              window.requestAnimationFrame = 
-                  window.requestAnimationFrame       || 
-                  window.webkitRequestAnimationFrame || 
-                  window.mozRequestAnimationFrame    || 
-                  window.oRequestAnimationFrame      || 
-                  window.msRequestAnimationFrame     || 
-                  function (callback) {
-                      window.setTimeout(callback, 1000/60);
-                  };
-              
-              var canvas, ctx, w, h, particles = [], probability = 0.04,
-                  xPoint, yPoint;
-              
-              
-              
-              
-              
-              function onLoad() {
-                  canvas = document.getElementById("canvas");
-                  ctx = canvas.getContext("2d");
-                  resizeCanvas();
-                  
-                  window.requestAnimationFrame(updateWorld);
-              } 
-              
-              function resizeCanvas() {
-                  if (!!canvas) {
-                      w = canvas.width = window.innerWidth;
-                      h = canvas.height = window.innerHeight;
-                  }
-              } 
-              
-              function updateWorld() {
-                  update();
-                  paint();
-                  window.requestAnimationFrame(updateWorld);
-              } 
-              
-              function update() {
-                  if (particles.length < 500 && Math.random() < probability) {
-                      createFirework();
-                  }
-                  var alive = [];
-                  for (var i=0; i<particles.length; i++) {
-                      if (particles[i].move()) {
-                          alive.push(particles[i]);
-                      }
-                  }
-                  particles = alive;
-              } 
-              
-              function paint() {
-                  ctx.globalCompositeOperation = 'source-over';
-                  ctx.fillStyle = "rgba(0,0,0,0.1)";
-                  ctx.fillRect(0, 0, w, h);
-                  ctx.globalCompositeOperation = 'lighter';
-                  for (var i=0; i<particles.length; i++) {
-                      particles[i].draw(ctx);
-                  }
-              } 
-              
-              function createFirework() {
-                  xPoint = Math.random()*(w-200)+100;
-                  yPoint = Math.random()*(h-200)+100;
-                  var nFire = Math.random()*50+100;
-                  var c = "rgb("+(~~(Math.random()*200+55))+","
-                       +(~~(Math.random()*200+55))+","+(~~(Math.random()*200+55))+")";
-                  for (var i=0; i<nFire; i++) {
-                      var particle = new Particle();
-                      particle.color = c;
-                      var vy = Math.sqrt(25-particle.vx*particle.vx);
-                      if (Math.abs(particle.vy) > vy) {
-                          particle.vy = particle.vy>0 ? vy: -vy;
-                      }
-                      particles.push(particle);
-                  }
-              } 
-              
-              function Particle() {
-                  this.w = this.h = Math.random()*4+1;
-                  
-                  this.x = xPoint-this.w/2;
-                  this.y = yPoint-this.h/2;
-                  
-                  this.vx = (Math.random()-0.5)*10;
-                  this.vy = (Math.random()-0.5)*10;
-                  
-                  this.alpha = Math.random()*.5+.5;
-                  
-                  this.color;
-              } 
-              
-              Particle.prototype = {
-                  gravity: 0.05,
-                  move: function () {
-                      this.x += this.vx;
-                      this.vy += this.gravity;
-                      this.y += this.vy;
-                      this.alpha -= 0.01;
-                      if (this.x <= -this.w || this.x >= screen.width ||
-                          this.y >= screen.height ||
-                          this.alpha <= 0) {
-                              return false;
-                      }
-                      return true;
-                  },
-                  draw: function (c) {
-                      c.save();
-                      c.beginPath();
-                      
-                      c.translate(this.x+this.w/2, this.y+this.h/2);
-                      c.arc(0, 0, this.w, 0, Math.PI*2);
-                      c.fillStyle = this.color;
-                      c.globalAlpha = this.alpha;
-                      
-                      c.closePath();
-                      c.fill();
-                      c.restore();
-                  }
-              } 
-   </script>
-      <script>
-      (function () {
-           let dayLimit = 31;
-            var todayInfo = new Date();   
-      
-      const second = 1000,
-          minute = second * 60,
-          hour = minute * 60,
-          day = hour * 24;
-      
-      //I'm adding this section so I don't have to keep updating this pen every year :-)
-      //remove this if you don't need it
-      let today = new Date(),
-        dd = String(today.getDate()).padStart(2, "0"),
-        mm = String(today.getMonth() + 1).padStart(2, "0"),
-        yyyy = today.getFullYear(),
-        nextYear = yyyy + 1,
-        dayMonth = "12/31/",
-        birthday = dayMonth + yyyy;
-      
-      today = mm + "/" + dd + "/" + yyyy;
-      if (today > birthday) {
-      birthday = dayMonth + nextYear;
-      }
-      //end
-      
-      const countDown = new Date(birthday).getTime(),
-        x = setInterval(function() {    
-      
-          const now = new Date().getTime(),
-                distance = countDown - now;
-      
-      if (todayInfo.getFullYear() != 2022 || (todayInfo.getMonth()+1) != 12 || todayInfo.getDate() < dayLimit) {
-            document.getElementById("days").innerText = Math.floor(distance / (day)),
-            document.getElementById("hours").innerText = Math.floor((distance % (day)) / (hour)),
-            document.getElementById("minutes").innerText = Math.floor((distance % (hour)) / (minute)),
-            document.getElementById("seconds").innerText = Math.floor((distance % (minute)) / second);
-      
-          //do something later when date is reached
-          if (distance < 0) {
-            document.getElementById("headline").innerText = "It's my birthday!";
-            document.getElementById("countdown").style.display = "none";
-            document.getElementById("content").style.display = "block";
-            clearInterval(x);
-          }
+
+        button.style.display = "none";
+
+        document.title = "Поздравляю";
+    }
+</script>
+<script>
+    window.addEventListener("resize", resizeCanvas, false);
+    window.addEventListener("DOMContentLoaded", onLoad, false);
+
+    window.requestAnimationFrame =
+        window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function (callback) {
+            window.setTimeout(callback, 1000 / 60);
+        };
+
+    let canvas, ctx, w, h, particles = [], probability = 0.04,
+        xPoint, yPoint;
+
+
+    function onLoad() {
+        canvas = document.getElementById("canvas");
+        ctx = canvas.getContext("2d");
+        resizeCanvas();
+
+        window.requestAnimationFrame(updateWorld);
+    }
+
+    function resizeCanvas() {
+        if (!!canvas) {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
         }
-          
-          //seconds
-        }, 0)
-      }());
-   </script>
+    }
+
+    function updateWorld() {
+        update();
+        paint();
+        window.requestAnimationFrame(updateWorld);
+    }
+
+    function update() {
+        if (particles.length < 500 && Math.random() < probability) {
+            createFirework();
+        }
+        let alive = [];
+        for (let i = 0; i < particles.length; i++) {
+            if (particles[i].move()) {
+                alive.push(particles[i]);
+            }
+        }
+        particles = alive;
+    }
+
+    function paint() {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = "rgba(0,0,0,0.1)";
+        ctx.fillRect(0, 0, w, h);
+        ctx.globalCompositeOperation = 'lighter';
+        for (let i = 0; i < particles.length; i++) {
+            particles[i].draw(ctx);
+        }
+    }
+
+    function createFirework() {
+        xPoint = Math.random() * (w - 200) + 100;
+        yPoint = Math.random() * (h - 200) + 100;
+        let nFire = Math.random() * 50 + 100;
+        let c = "rgb(" + (~~(Math.random() * 200 + 55)) + ","
+            + (~~(Math.random() * 200 + 55)) + "," + (~~(Math.random() * 200 + 55)) + ")";
+        for (let i = 0; i < nFire; i++) {
+            let particle = new Particle();
+            particle.color = c;
+            let vy = Math.sqrt(25 - particle.vx * particle.vx);
+            if (Math.abs(particle.vy) > vy) {
+                particle.vy = particle.vy > 0 ? vy : -vy;
+            }
+            particles.push(particle);
+        }
+    }
+
+    function Particle() {
+        this.w = this.h = Math.random() * 4 + 1;
+
+        this.x = xPoint - this.w / 2;
+        this.y = yPoint - this.h / 2;
+
+        this.vx = (Math.random() - 0.5) * 10;
+        this.vy = (Math.random() - 0.5) * 10;
+
+        this.alpha = Math.random() * .5 + .5;
+
+        this.color;
+    }
+
+    Particle.prototype = {
+        gravity: 0.05,
+        move: function () {
+            this.x += this.vx;
+            this.vy += this.gravity;
+            this.y += this.vy;
+            this.alpha -= 0.01;
+            return !(this.x <= -this.w || this.x >= screen.width ||
+                this.y >= screen.height ||
+                this.alpha <= 0);
+
+        },
+        draw: function (c) {
+            c.save();
+            c.beginPath();
+
+            c.translate(this.x + this.w / 2, this.y + this.h / 2);
+            c.arc(0, 0, this.w, 0, Math.PI * 2);
+            c.fillStyle = this.color;
+            c.globalAlpha = this.alpha;
+
+            c.closePath();
+            c.fill();
+            c.restore();
+        }
+    }
+</script>
+<script>
+    (function () {
+        let dayLimit = 31;
+        let todayInfo = new Date();
+
+        const second = 1000,
+            minute = second * 60,
+            hour = minute * 60,
+            day = hour * 24;
+
+        //I'm adding this section, so I don't have to keep updating this pen every year :-)
+        //remove this if you don't need it
+        let today = new Date(),
+            dd = String(today.getDate()).padStart(2, "0"),
+            mm = String(today.getMonth() + 1).padStart(2, "0"),
+            yyyy = today.getFullYear(),
+            nextYear = yyyy + 1,
+            dayMonth = "12/31/",
+            birthday = dayMonth + yyyy;
+
+        today = mm + "/" + dd + "/" + yyyy;
+        if (today > birthday) {
+            birthday = dayMonth + nextYear;
+        }
+        //end
+
+        const countDown = new Date(birthday).getTime(),
+            x = setInterval(function () {
+
+                const now = new Date().getTime(),
+                    distance = countDown - now;
+
+                if (todayInfo.getFullYear() !== 2022 || (todayInfo.getMonth() + 1) !== 12 || todayInfo.getDate() < dayLimit) {
+                    document.getElementById("days").innerText = Math.floor(distance / (day)),
+                        document.getElementById("hours").innerText = Math.floor((distance % (day)) / (hour));
+                        document.getElementById("minutes").innerText = Math.floor((distance % (hour)) / (minute));
+                        document.getElementById("seconds").innerText = Math.floor((distance % (minute)) / second);
+
+                    //do something later when date is reached
+                    if (distance < 0) {
+                        document.getElementById("headline").innerText = "It's my birthday!";
+                        document.getElementById("countdown").style.display = "none";
+                        document.getElementById("content").style.display = "block";
+                        clearInterval(x);
+                    }
+                }
+
+                //seconds
+            }, 0)
+    }());
+</script>
 </html>
 <!--КТО СМОТРИТ КОД СТРАНИЦЫ, ТОТ ЖУЛИК! БЫСТРО ЗАКРОЙ И НЕ ЖУЛЬНИЧАЙ БОЛЬШЕ)))-->

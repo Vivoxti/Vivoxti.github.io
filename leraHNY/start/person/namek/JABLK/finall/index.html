@@ -1,235 +1,246 @@
 <!--КТО СМОТРИТ КОД СТРАНИЦЫ, ТОТ ЖУЛИК! БЫСТРО ЗАКРОЙ И НЕ ЖУЛЬНИЧАЙ БОЛЬШЕ)))-->
 <html lang="en-us">
-   <head>
-      <meta charset="utf-8">
-      <title>Крути телефон для дополнительных деталей</title>
-      <link rel="apple-touch-icon" sizes="180x180" href="https://raw.githubusercontent.com/Vivoxti/Vivoxti.github.io/master/leraHNY/apple-touch-icon.png">
-      <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/Vivoxti/Vivoxti.github.io/master/leraHNY/favicon-32x32.png">
-      <link rel="icon" type="image/png" sizes="16x16" href="https://raw.githubusercontent.com/Vivoxti/Vivoxti.github.io/master/leraHNY/favicon-16x16.png">
-      <style  id="styleTimer">
-         /* general styling */
-         :root {
-         --smaller: .75;
-         }
-         * {
-         box-sizing: border-box;
-         margin: 0;
-         padding: 0;
-         }
-         html, body {
-         height: 100%;
-         margin: 0;
-         }
-         body {
-         align-items: center;
-         background-color: #ffd54f;
-         display: flex;
-         font-family: -apple-system, 
-         BlinkMacSystemFont, 
-         "Segoe UI", 
-         Roboto, 
-         Oxygen-Sans, 
-         Ubuntu, 
-         Cantarell, 
-         "Helvetica Neue", 
-         sans-serif;
-         }
-         .container {
-         color: #333;
-         margin: 0 auto;
-         text-align: center;
-         }
-         h1 {
-         font-weight: normal;
-         letter-spacing: .125rem;
-         text-transform: uppercase;
-         }
-         li {
-         display: inline-block;
-         font-size: 1.5em;
-         list-style-type: none;
-         padding: 1em;
-         text-transform: uppercase;
-         }
-         li span {
-         display: block;
-         font-size: 4.5rem;
-         }
-         .emoji {
-         display: none;
-         padding: 1rem;
-         }
-         .emoji span {
-         font-size: 4rem;
-         padding: 0 .5rem;
-         }
-         #audio {
-         height: 0px;
-         width: 0px;
-         }
-         @media all and (max-width: 768px) {
-         h1 {
-         font-size: calc(1.5rem * var(--smaller));
-         }
-         li {
-         font-size: calc(1.125rem * var(--smaller));
-         }
-         li span {
-         font-size: calc(3.375rem * var(--smaller));
-         }
-         }
-      </style>
-      <style id="styleMain">
-         #main {
-         height: 100%;
-         width: 100%;
-         font-family: Roboto, Arial;
-         display: flex;
-         justify-content: center;
-         align-items: center;
-         background-image: url('background.jpg');
-         background-size: cover;
-         }
-         body {
-         margin: 0px;
-         }
-      </style>
-   </head>
-   <body id="mainbody">
-      <div class="container" id="coolTimer">
-         <h1 id="headline">Данная стадия ивента начинается через</h1>
-         <div id="countdown">
-            <ul>
-               <li><span id="days"></span>Дней</li>
-               <li><span id="hours"></span>Часов</li>
-               <li><span id="minutes"></span>Минут</li>
-               <li><span id="seconds"></span>Секунд</li>
-            </ul>
-         </div>
-         <div id="content" class="emoji">
-            <span>🥳</span>
-            <span>🎉</span>
-            <span>🎂</span>
-         </div>
-      </div>
-      <div id="main">
-      </div>
-   </body>
-   <script>
-      console.log("КТО СМОТРИТ КОД СТРАНИЦЫ, ТОТ ЖУЛИК! БЫСТРО ЗАКРОЙ И НЕ ЖУЛЬНИЧАЙ БОЛЬШЕ)))");
-let dayLimit = 30;
-var todayInfo = new Date();
-
-
-
-var previousOrientation = window.orientation;
-
-function setOrientationView(orientation) {
-
-    console.log(window.orientation);
-    if (window.orientation == 0) {
-        document.getElementById("main").style.backgroundImage = "url('b1.jpg')";
-    } else if (window.orientation === 90) {
-
-
-        if (previousOrientation === 0) {
-            document.getElementById("main").style.backgroundImage = "url('b2.jpg')";
-        } else if (previousOrientation === -90) {
-            document.getElementById("main").style.backgroundImage = "url('b5.jpg')";
+<head>
+    <meta charset="utf-8">
+    <title>Крути телефон для дополнительных деталей</title>
+    <link href="https://raw.githubusercontent.com/Vivoxti/Vivoxti.github.io/master/leraHNY/apple-touch-icon.png"
+          rel="apple-touch-icon"
+          sizes="180x180">
+    <link href="https://raw.githubusercontent.com/Vivoxti/Vivoxti.github.io/master/leraHNY/favicon-32x32.png" rel="icon"
+          sizes="32x32"
+          type="image/png">
+    <link href="https://raw.githubusercontent.com/Vivoxti/Vivoxti.github.io/master/leraHNY/favicon-16x16.png" rel="icon"
+          sizes="16x16"
+          type="image/png">
+    <style id="styleTimer">
+        /* general styling */
+        :root {
+            --smaller: .75;
         }
 
-    } else if (window.orientation === -90) {
-
-        if (previousOrientation === 0) {
-            document.getElementById("main").style.backgroundImage = "url('b3.jpg')";
-        } else if (previousOrientation === 90) {
-            document.getElementById("main").style.backgroundImage = "url('b4.jpg')";
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            align-items: center;
+            background-color: #ffd54f;
+            display: flex;
+            font-family: -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            Roboto,
+            Oxygen-Sans,
+            Ubuntu,
+            Cantarell,
+            "Helvetica Neue",
+            sans-serif;
+        }
+
+        .container {
+            color: #333;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        h1 {
+            font-weight: normal;
+            letter-spacing: .125rem;
+            text-transform: uppercase;
+        }
+
+        li {
+            display: inline-block;
+            font-size: 1.5em;
+            list-style-type: none;
+            padding: 1em;
+            text-transform: uppercase;
+        }
+
+        li span {
+            display: block;
+            font-size: 4.5rem;
+        }
+
+        .emoji {
+            display: none;
+            padding: 1rem;
+        }
+
+        .emoji span {
+            font-size: 4rem;
+            padding: 0 .5rem;
+        }
+
+        @media all and (max-width: 768px) {
+            h1 {
+                font-size: calc(1.5rem * var(--smaller));
+            }
+
+            li {
+                font-size: calc(1.125rem * var(--smaller));
+            }
+
+            li span {
+                font-size: calc(3.375rem * var(--smaller));
+            }
+        }
+    </style>
+    <style id="styleMain">
+        #main {
+            height: 100%;
+            width: 100%;
+            font-family: Roboto, Arial, serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+           background-image: url('b2.jpg');
+            background-size: cover;
+        }
+
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body id="main-body">
+<div class="container" id="coolTimer">
+    <h1 id="headline">Данная стадия ивента начинается через</h1>
+    <div id="countdown">
+        <ul>
+            <li><span id="days"></span>Дней</li>
+            <li><span id="hours"></span>Часов</li>
+            <li><span id="minutes"></span>Минут</li>
+            <li><span id="seconds"></span>Секунд</li>
+        </ul>
+    </div>
+    <div class="emoji" id="content">
+        <span>🥳</span>
+        <span>🎉</span>
+        <span>🎂</span>
+    </div>
+</div>
+<div id="main">
+</div>
+</body>
+<script>
+    console.log("КТО СМОТРИТ КОД СТРАНИЦЫ, ТОТ ЖУЛИК! БЫСТРО ЗАКРОЙ И НЕ ЖУЛЬНИЧАЙ БОЛЬШЕ)))");
+    let dayLimit = 10;
+    let todayInfo = new Date();
+
+
+    let previousOrientation = window.orientation;
+
+    function setOrientationView(orientation) {
+
+        console.log(window.orientation);
+        if (window.orientation === 0) {
+            document.getElementById("main").style.backgroundImage = "url('b1.jpg')";
+        } else if (window.orientation === 90) {
+
+
+            if (previousOrientation === 0) {
+                document.getElementById("main").style.backgroundImage = "url('b2.jpg')";
+            } else if (previousOrientation === -90) {
+                document.getElementById("main").style.backgroundImage = "url('b5.jpg')";
+            }
+
+        } else if (window.orientation === -90) {
+
+            if (previousOrientation === 0) {
+                document.getElementById("main").style.backgroundImage = "url('b3.jpg')";
+            } else if (previousOrientation === 90) {
+                document.getElementById("main").style.backgroundImage = "url('b4.jpg')";
+            }
+        }
+
+
+        previousOrientation = window.orientation;
     }
 
 
-    previousOrientation = window.orientation;
-}
+    if (todayInfo.getFullYear() !== 2022 || (todayInfo.getMonth() + 1) !== 12 || todayInfo.getDate() < dayLimit) {
+        document.getElementById("main").hidden = true;
 
+        document.getElementById("coolTimer").hidden = false;
 
-
-
-if (todayInfo.getFullYear() != 2022 || (todayInfo.getMonth() + 1) != 12 || todayInfo.getDate() < dayLimit) {
-    document.getElementById("main").hidden = true;
-
-    document.getElementById("coolTimer").hidden = false;
-
-    var style = document.getElementById("styleMain");
-    style.remove();
-} else {
-    var style = document.getElementById("styleTimer");
-    style.remove();
-    var timer = document.getElementById("coolTimer");
-    timer.remove();
-    setOrientationView(window.orientation);
-}
-
-
-
-
-window.addEventListener("orientationchange", function() {
-    if (todayInfo.getFullYear() != 2022 || (todayInfo.getMonth() + 1) != 12 || todayInfo.getDate() < dayLimit) {} else {
+        let styleMain = document.getElementById("styleMain");
+        styleMain.remove();
+    } else {
+        let styleTimer = document.getElementById("styleTimer");
+        styleTimer.remove();
+        let timer = document.getElementById("coolTimer");
+        timer.remove();
         setOrientationView(window.orientation);
     }
 
-}, false);
-      
-   </script>
-   <script>
-      (function () {
-           let dayLimit = 30;//30
-            var todayInfo = new Date();   
-      
-      const second = 1000,
-          minute = second * 60,
-          hour = minute * 60,
-          day = hour * 24;
-      
-      //I'm adding this section so I don't have to keep updating this pen every year :-)
-      //remove this if you don't need it
-      let today = new Date(),
-        dd = String(today.getDate()).padStart(2, "0"),
-        mm = String(today.getMonth() + 1).padStart(2, "0"),
-        yyyy = today.getFullYear(),
-        nextYear = yyyy + 1,
-        dayMonth = "12/30/",
-        birthday = dayMonth + yyyy;
-      
-      today = mm + "/" + dd + "/" + yyyy;
-      if (today > birthday) {
-      birthday = dayMonth + nextYear;
-      }
-      //end
-      
-      const countDown = new Date(birthday).getTime(),
-        x = setInterval(function() {    
-      
-          const now = new Date().getTime(),
-                distance = countDown - now;
-      
-      if (todayInfo.getFullYear() != 2022 || (todayInfo.getMonth()+1) != 12 || todayInfo.getDate() < dayLimit) {
-            document.getElementById("days").innerText = Math.floor(distance / (day)),
-            document.getElementById("hours").innerText = Math.floor((distance % (day)) / (hour)),
-            document.getElementById("minutes").innerText = Math.floor((distance % (hour)) / (minute)),
-            document.getElementById("seconds").innerText = Math.floor((distance % (minute)) / second);
-      
-          //do something later when date is reached
-          if (distance < 0) {
-            document.getElementById("headline").innerText = "It's my birthday!";
-            document.getElementById("countdown").style.display = "none";
-            document.getElementById("content").style.display = "block";
-            clearInterval(x);
-          }
+
+    window.addEventListener("orientationchange", function () {
+        if (todayInfo.getFullYear() !== 2022 || (todayInfo.getMonth() + 1) !== 12 || todayInfo.getDate() < dayLimit) {
+        } else {
+            setOrientationView(window.orientation);
         }
-          
-          //seconds
-        }, 0)
-      }());
-   </script>
+
+    }, false);
+
+</script>
+<script>
+    (function () {
+        let dayLimit = 10;//30
+        let todayInfo = new Date();
+
+        const second = 1000,
+            minute = second * 60,
+            hour = minute * 60,
+            day = hour * 24;
+
+        //I'm adding this section, so I don't have to keep updating this pen every year :-)
+        //remove this if you don't need it
+        let today = new Date(),
+            dd = String(today.getDate()).padStart(2, "0"),
+            mm = String(today.getMonth() + 1).padStart(2, "0"),
+            yyyy = today.getFullYear(),
+            nextYear = yyyy + 1,
+            dayMonth = "12/30/",
+            birthday = dayMonth + yyyy;
+
+        today = mm + "/" + dd + "/" + yyyy;
+        if (today > birthday) {
+            birthday = dayMonth + nextYear;
+        }
+        //end
+
+        const countDown = new Date(birthday).getTime(),
+            x = setInterval(function () {
+
+                const now = new Date().getTime(),
+                    distance = countDown - now;
+
+                if (todayInfo.getFullYear() !== 2022 || (todayInfo.getMonth() + 1) !== 12 || todayInfo.getDate() < dayLimit) {
+                    document.getElementById("days").innerText = Math.floor(distance / (day));
+                    document.getElementById("hours").innerText = Math.floor((distance % (day)) / (hour));
+                    document.getElementById("minutes").innerText = Math.floor((distance % (hour)) / (minute));
+                    document.getElementById("seconds").innerText = Math.floor((distance % (minute)) / second);
+
+                    //do something later when date is reached
+                    if (distance < 0) {
+                        document.getElementById("headline").innerText = "It's my birthday!";
+                        document.getElementById("countdown").style.display = "none";
+                        document.getElementById("content").style.display = "block";
+                        clearInterval(x);
+                    }
+                }
+
+                //seconds
+            }, 0)
+    }());
+</script>
 </html>
 <!--КТО СМОТРИТ КОД СТРАНИЦЫ, ТОТ ЖУЛИК! БЫСТРО ЗАКРОЙ И НЕ ЖУЛЬНИЧАЙ БОЛЬШЕ)))-->
