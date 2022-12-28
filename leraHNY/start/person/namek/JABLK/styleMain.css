@@ -456,7 +456,6 @@ html {
 body {
     height: 97%;
     font-family: Roboto, Arial;
-    display: flex;
     justify-content: center;
     align-items: center;
     background-image: url('background.jpg');
@@ -464,6 +463,22 @@ body {
     padding: 20px;
 }
 
+#main {
+    height: 100%;
+    width: 100%;
+}
+
+
+#flexcontent {
+    height: 100%;
+    width: 100%;
+        display: flex;
+            position: absolute;
+            top: 0;
+             bottom: 0;
+             align-items: center;
+  justify-content: center;
+}
 body .dribbble {
     position: fixed;
     display: block;

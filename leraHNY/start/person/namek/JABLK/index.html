@@ -240,6 +240,10 @@
     </style>
 
     <link href="styleMain.css" id="styleMain" rel="stylesheet">
+
+    <link rel="stylesheet" id="styleMain2" href="https://cdn.korzh.com/metroui/v4.5.1/css/metro-all.min.css">
+    <link rel="stylesheet" id="styleMain3" href="christmas-balls-master/lib/css/christmas-balls.css">
+
 </head>
 <body id="main-body">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
@@ -260,8 +264,14 @@
     </div>
 </div>
 
-<a class="dl-button" href="">
-    <div id="main">
+
+
+
+<div id="main">
+   <div data-role="christmas-balls" data-sound-path="christmas-balls-master/sounds/"></div>
+   <div id="flexcontent">
+    <a class="dl-button" href="">
+    <div id="mainAlpha">
         <div class="icon">
             <div>
                 <svg class="arrow" fill="currentColor" viewBox="0 0 20 18">
@@ -336,7 +346,12 @@
 
     </div>
 </a>
+    </div>
+</div>
+
 </body>
+<script src="https://cdn.korzh.com/metroui/v4.5.1/js/metro.min.js"></script>
+<script src="christmas-balls-master/lib/js/christmas-balls.js"></script>
 <script>
 
 
@@ -352,6 +367,10 @@
 
         let styleMain = document.getElementById("styleMain");
         styleMain.remove()
+          let styleMain2 = document.getElementById("styleMain2");
+        styleMain2.remove()
+          let styleMain3 = document.getElementById("styleMain3");
+        styleMain3.remove()
     } else {
         let styleTimer = document.getElementById("styleTimer");
         styleTimer.remove()
