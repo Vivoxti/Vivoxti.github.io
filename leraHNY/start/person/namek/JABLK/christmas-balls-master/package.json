@@ -52,6 +52,6 @@
     "grunt-remove-comments": "^0.1.6"
   },
   "dependencies": {
-    "metro4": "^4.4.2"
+    "metro4": "^4.5.1"
   }
 }
