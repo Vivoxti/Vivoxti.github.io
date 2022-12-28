@@ -1,0 +1,57 @@
+{
+  "author": "Sergey Pimenov",
+  "name": "christmas-balls",
+  "version": "1.0.0",
+  "version_suffix": "",
+  "description": "",
+  "keywords": [
+    "metro",
+    "css",
+    "less",
+    "responsive",
+    "front-end",
+    "framework",
+    "web",
+    "christmass",
+    "decoration"
+  ],
+  "funding": {
+    "type": "patreon",
+    "url": "https://www.patreon.com/metroui"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/olton/christmas-balls.git"
+  },
+  "homepage": "https://github.com/olton/christmas-balls.git",
+  "license": "MIT",
+  "scripts": {
+    "build": "npm install && grunt"
+  },
+  "browserslist": [
+    "last 2 versions"
+  ],
+  "devDependencies": {
+    "autoprefixer": "^9.0.0",
+    "cssnano": "^4.1.10",
+    "eslint": "^7.12.1",
+    "grunt": "^1.3.0",
+    "grunt-clear": "^0.2.1",
+    "grunt-contrib-clean": "^2.0.0",
+    "grunt-contrib-copy": "^1.0.0",
+    "grunt-contrib-less": "^2.0.0",
+    "grunt-contrib-uglify": "^5.0.0",
+    "grunt-contrib-watch": "^1.1.0",
+    "grunt-eslint": "^23.0.0",
+    "grunt-postcss": "^0.9.0",
+    "grunt-remove-logging": "^0.2.0",
+    "less": "^3.12.2",
+    "load-grunt-tasks": "^5.1.0",
+    "time-grunt": "^2.0.0",
+    "grunt-contrib-concat": "^1.0.1",
+    "grunt-remove-comments": "^0.1.6"
+  },
+  "dependencies": {
+    "metro4": "^4.4.2"
+  }
+}
