@@ -8,6 +8,8 @@ let mainContainerId = "div_desktop";
 let mainContainerDesktopParamType = "px";
 let mainContainerDefaultParamType = "100%";
 
+
+let bodyStrokeClassName = "stroke";
 let interactionClassName = "interactionElement";
 let interactionInitializeClassName = "interactionElementInitialize";
 let interactionMobileClassName = "interactionElementMobile";
@@ -44,6 +46,7 @@ function SetFontSize() {
         }
     }
     SetAdaptiveWidth();
+    SetStroke();
 }
 
 function SetAdaptiveWidth() {
@@ -105,6 +108,12 @@ window.addEventListener("load", function () {
 
 function ReportWindowSize() {
     SetFontSize();
+}
+
+function SetStroke() {
+    for (let i = 0; i < links.length; i++) {
+        links[i].classList.add(bodyStrokeClassName);
+    }
 }
 
 window.onresize = ReportWindowSize;

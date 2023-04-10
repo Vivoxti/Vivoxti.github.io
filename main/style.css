@@ -52,6 +52,9 @@ ul li a {
     line-height: 1em;
     text-transform: uppercase;
     color: transparent;
+}
+
+.stroke {
     -webkit-text-stroke: 1px rgba(255, 255, 255, 0.5);
 }
 
