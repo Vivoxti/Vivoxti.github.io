@@ -58,11 +58,9 @@ body {
   left: 20px;
   width: 90px;
   height: 120px;
-  border-top: 40px solid rgba(255, 255, 255, 1.0);
-  border-left: 40px solid rgba(255, 255, 255, 1.0);
-  border-bottom: 40px solid rgba(255, 255, 255, 1.0);
-  border-radius: 100px 0 0 100px;
-
+  border-top: 40px solid rgba(55, 255, 255, 0.0);
+  border-left: 40px solid rgba(55, 255, 255, 0.0);
+  border-bottom: 40px solid rgba(55, 255, 255, 0.0);
 }
 
 #C2-top {
@@ -73,8 +71,7 @@ body {
   left: 89px;
   border-radius: 0 10px 10px 0;
   background: rgba(255, 255, 255, 1.0);
-   outline: 1px solid rgba(255, 255, 255, 1.0);
-   outline-offset: -1px;
+
 }
 
 #C2-bottom {
@@ -85,8 +82,27 @@ body {
   left: 89px;
   border-radius: 0 10px 10px 0;
   background: rgba(255, 255, 255, 1.0);
-     outline: 1px solid rgba(255, 255, 255, 1.0);
-   outline-offset: -1px;
+}
+
+#C2-white {
+  position: absolute;
+  width: 140px;
+  height: 200px;
+  top: -40px;
+  left: -40px;
+  border-radius: 140px 0px 0px 140px;
+  background: rgba(255, 255, 255, 1.0);
+
+}
+
+#C2-black {
+    position: absolute;
+  top: 0;
+  left: 0px;
+  width: 110px;
+  height: 120px;
+  background: rgba(0, 0, 0, 1.0);
+    border-radius: 100px 0 0 100px;
 }
 
 
