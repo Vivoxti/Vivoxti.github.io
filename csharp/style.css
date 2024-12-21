@@ -10,6 +10,10 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  margin-left: 0px;
+  margin-top: 0px;
+  margin-right: 0px;
+  margin-bottom: 0px;
 }
 
 body {
@@ -163,4 +167,60 @@ body {
   background: -moz-linear-gradient(top, #F3B562, #F06060);
   background: -ms-linear-gradient(top, #F3B562, #F06060);
   background: -o-linear-gradient(top, #F3B562, #F06060);
+}
+
+
+/* Game board */
+/* Center */
+#center-center {
+  left: 65px;
+  top: 65px;
+}
+
+#left-center {
+  left: -15px;
+  top: 65px;
+}
+
+#right-center {
+  left: 145px;
+  top: 65px;
+}
+/* Top */
+#center-top {
+  left: 65px;
+  top: -15px;
+}
+
+#left-top {
+  left: -15px;
+  top: -15px;
+}
+
+#right-top {
+  left: 145px;
+  top: -15px;
+}
+/* Bottom */
+#center-bottom {
+  left: 65px;
+  top: 145px;
+}
+
+#left-bottom {
+  left: -15px;
+  top: 145px;
+}
+
+#right-bottom {
+  left: 145px;
+  top: 145px;
+}
+
+.game-cell {
+    position: absolute;
+  width: 70px;
+  height: 70px;
+    background: rgba(255, 255, 255, 0.1);
+   border-radius: 10px;
 }
