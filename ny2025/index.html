@@ -289,7 +289,7 @@ p, div, span {
     
                     navigator.clipboard.writeText("C8NXP-5735R-9M2F0⁣⁣⁣⁣⁣⁣⁣⁣⁣⁣⁣⁣⁣⁣⁣⁣⁣⁣");
  
-                    alert("Copied steam key");
+                    alert("Стим ключ с игрой скопирован");
                 }
                 </script>
                 <img src="https://upload.wikimedia.org/wikipedia/commons/8/83/Steam_icon_logo.svg" style="width:30px;height:30px;" alt="Steam">
@@ -299,4 +299,15 @@ p, div, span {
 
 </div>
 </div>
+<script>
+    const touchHandler = (ev) => {
+    ev.preventDefault() // Запретить выделение текста
+    console.log("d");
+}
+document.addEventListener('touchstart', touchHandler, {passive:false})
+document.addEventListener('touchmove', touchHandler, {passive:false})
+document.addEventListener('touchend', touchHandler, {passive:false})
+document.addEventListener('touchcancel', touchHandler, {passive:false})
+    </script>
 </html>
+
