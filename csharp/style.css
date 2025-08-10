@@ -40,6 +40,13 @@ body {
   justify-content: center;
   flex-direction: row;
   flex-wrap: nowrap;
+
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .letter-container {
@@ -221,4 +228,10 @@ body {
   position: absolute;
   width: 70px;
   height: 70px;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none; 
+  -webkit-user-select: none;   
+  -moz-user-select: none;      
+  -ms-user-select: none;       
+  user-select: none;           
 }
