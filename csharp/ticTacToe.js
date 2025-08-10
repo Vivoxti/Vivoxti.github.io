@@ -153,6 +153,11 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ================== GAME FLOW ================== */
   function handleCellClick(cellEl) {
     const index = CELL_IDS.indexOf(cellEl.id);
+
+    if (navigator.vibrate) {
+      navigator.vibrate(30);
+    }
+
     if (board[index] !== null) {
       bounceCell(cellEl);
       return;
