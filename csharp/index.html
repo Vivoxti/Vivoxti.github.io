@@ -1,59 +1,64 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="user-scalable=no" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  
+  <title>C#</title>
 
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="viewport" content="user-scalable=no">
+  <!-- Favicons & Icons -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/csharp/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/csharp/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/csharp/img/favicon-16x16.png">
+  <link rel="mask-icon" href="/csharp/img/safari-pinned-tab.svg" color="#b85bd5">
+  <link rel="shortcut icon" href="/csharp/img/favicon.ico">
+  <meta name="msapplication-TileColor" content="#603cba">
+  <meta name="msapplication-config" content="/csharp/img/browserconfig.xml">
+  <meta name="theme-color" content="#000000">
 
-    <link rel="apple-touch-icon" sizes="180x180" href="/csharp/img/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/csharp/img/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/csharp/img/favicon-16x16.png">
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="flex-container">
 
-    <link rel="mask-icon" href="/csharp/img/safari-pinned-tab.svg" color="#b85bd5">
-    <link rel="shortcut icon" href="/csharp/img/favicon.ico">
-    <meta name="msapplication-TileColor" content="#603cba">
-    <meta name="msapplication-config" content="/csharp/img/browserconfig.xml">
-    <meta name="theme-color" content="#000000" />
-
-    <link rel="stylesheet" href="style.css">
-
-    <title>C#</title>
-  </head>
-  <body>
-    <div class="flex-container">
-      <!-- C -->
-      <div class="letter-container">
-        <div id="C">
-          <div id="C2-top"></div>
-          <div id="C2-bottom"></div>
-          <div id="C2-white"></div>
-          <div id="C2-black"></div>
-        </div>
-      </div>
-      <!-- Sharp -->
-      <div class="letter-container" style="margin-right: 30px;">
-        <div id="Sharp">
-          <div id="Sharp2-top"></div>
-          <div id="Sharp2-bottom"></div>
-          <div id="Sharp2-left"></div>
-          <div id="Sharp2-right"></div>
-
-            <div class="game-cell" id="center-center" onclick="theFunction()"></div>
-            <div class="game-cell" id="left-center" onclick="theFunction()"></div>
-            <div class="game-cell" id="right-center" onclick="theFunction()"></div>
-
-            <div class="game-cell" id="center-top" onclick="theFunction()"></div>
-            <div class="game-cell" id="left-top" onclick="theFunction()"></div>
-            <div class="game-cell" id="right-top" onclick="theFunction()"></div>
-
-            <div class="game-cell" id="center-bottom" onclick="theFunction()"></div>
-            <div class="game-cell" id="left-bottom" onclick="theFunction()"></div>
-            <div class="game-cell" id="right-bottom" onclick="theFunction()"></div>
-        </div>
+    <!-- Letter C -->
+    <div class="letter-container">
+      <div id="C">
+        <div id="C2-top"></div>
+        <div id="C2-bottom"></div>
+        <div id="C2-white"></div>
+        <div id="C2-black"></div>
       </div>
     </div>
-  </body>
+
+    <!-- Letter Sharp (#) with game cells -->
+    <div class="letter-container" style="margin-right: 30px;">
+      <div id="Sharp">
+        <div id="Sharp2-top"></div>
+        <div id="Sharp2-bottom"></div>
+        <div id="Sharp2-left"></div>
+        <div id="Sharp2-right"></div>
+
+        <!-- Game grid -->
+        <div class="game-cell" id="center-center"></div>
+        <div class="game-cell" id="left-center"></div>
+        <div class="game-cell" id="right-center"></div>
+
+        <div class="game-cell" id="center-top"></div>
+        <div class="game-cell" id="left-top"></div>
+        <div class="game-cell" id="right-top"></div>
+
+        <div class="game-cell" id="center-bottom"></div>
+        <div class="game-cell" id="left-bottom"></div>
+        <div class="game-cell" id="right-bottom"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Game Logic -->
   <script src="ticTacToe.js"></script>
+</body>
 </html>
