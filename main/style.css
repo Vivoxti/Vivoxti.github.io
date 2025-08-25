@@ -39,11 +39,14 @@ ul {
     flex-direction: column;
     width: 100%;
     gap: 30px;
+    align-items: flex-start;
 }
 
 ul li {
     position: relative;
     list-style: none;
+    align-self: flex-start;
+    width: fit-content;
 }
 
 ul li a {
