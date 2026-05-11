@@ -1,0 +1,310 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HardCore Speedrun - Champion Trophy</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="/d2hc/assets/favicons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/d2hc/assets/favicons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/d2hc/assets/favicons/favicon-16x16.png">
+  <link rel="icon" href="/d2hc/assets/favicons/favicon.ico">
+  <link rel="manifest" href="/d2hc/assets/favicons/site.webmanifest">
+<meta name="theme-color" content="#0a0806">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/d2hc/assets/css/styles.css">
+</head>
+<body>
+
+<canvas id="embers"></canvas>
+
+<svg class="fx-defs" aria-hidden="true" width="0" height="0" focusable="false">
+  <defs>
+    <filter id="trophyHeadDistortionA" x="-30%" y="-30%" width="160%" height="160%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.009 0.047" numOctaves="2" seed="7" stitchTiles="stitch" result="noise"></feTurbulence>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="8.5" xChannelSelector="R" yChannelSelector="G"></feDisplacementMap>
+    </filter>
+    <filter id="trophyHeadDistortionB" x="-30%" y="-30%" width="160%" height="160%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.0105 0.052" numOctaves="2" seed="11" stitchTiles="stitch" result="noise"></feTurbulence>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="10" xChannelSelector="R" yChannelSelector="G"></feDisplacementMap>
+    </filter>
+    <filter id="trophyHeadDistortionC" x="-30%" y="-30%" width="160%" height="160%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.0086 0.058" numOctaves="2" seed="15" stitchTiles="stitch" result="noise"></feTurbulence>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="9.2" xChannelSelector="R" yChannelSelector="G"></feDisplacementMap>
+    </filter>
+  </defs>
+</svg>
+
+<!-- TOP BAR -->
+<header class="top-bar">
+  <div class="top-left">
+    <div class="logo-row">
+      <span class="logo-hc">HARDCORE</span>
+      <img class="logo-banner" src="/d2hc/assets/images/ui/hardcore-banner.png" alt="Hardcore banner" />
+    </div>
+    <span class="logo-sub">SPEEDRUN<br>NORMAL</span>
+  </div>
+  <div class="top-right">
+    <span class="year">2026</span>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-bg" id="heroBg"></div>
+
+  <div class="hero-content">
+    <div class="hero-info">
+      <div class="champion-label">— CHAMPION —</div>
+      <h1 class="player-name">Vadim</h1>
+      <div class="player-class"><img class="icon-shield" src="/d2hc/assets/images/skills/holy-fire-aura-paladin-skill.png" alt="Holy Fire Aura skill icon" />Holy Fire PALADIN</div>
+      <div class="completion-time">4:32:04</div>
+      <div class="meta-date">MAY 9, 2026</div>
+      <div class="meta-diff">HARDCORE NORMAL</div>
+    </div>
+
+    <div class="trophy-container" id="trophy">
+      <div class="trophy-glow"></div>
+      <div class="trophy-aura" aria-hidden="true"></div>
+      <div class="trophy-crown" aria-hidden="true"></div>
+      <img class="trophy-image" src="/d2hc/assets/images/ui/trophy.png" alt="Champion trophy" />
+      <div class="trophy-distortion" aria-hidden="true">
+        <img class="trophy-distortion-image trophy-distortion-image-a" src="/d2hc/assets/images/ui/trophy.png" alt="" />
+        <img class="trophy-distortion-image trophy-distortion-image-b" src="/d2hc/assets/images/ui/trophy.png" alt="" />
+        <img class="trophy-distortion-image trophy-distortion-image-c" src="/d2hc/assets/images/ui/trophy.png" alt="" />
+      </div>
+      <div class="trophy-heat" aria-hidden="true"></div>
+      <div class="trophy-eyes" aria-hidden="true">
+        <span class="trophy-eye trophy-eye-left"></span>
+        <span class="trophy-eye trophy-eye-right"></span>
+        <span class="trophy-crystal"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-quote">"Only one life. Only one winner."</div>
+</section>
+
+<div class="section-fade" aria-hidden="true"></div>
+
+<!-- PLACEMENTS + ACHIEVEMENTS -->
+<section class="placements" id="placements">
+  <div class="placement-row">
+    <!-- 1st Place -->
+    <div class="placement-card first-place">
+      <div class="card-glow"></div>
+      <div class="placement-rank">1ST PLACE</div>
+      <div class="placement-body">
+        <div class="placement-portrait portrait-paladin">
+          <img src="/d2hc/assets/images/portraits/paladin-portrait.png" alt="Paladin portrait" loading="lazy" decoding="async" />
+        </div>
+        <div class="placement-info">
+          <div class="placement-name">ADDA</div>
+          <div class="placement-detail"><span class="detail-icon"><img src="/d2hc/assets/images/skills/holy-fire-aura-paladin-skill.png" alt="" loading="lazy" decoding="async" /></span> Holy Fire PALADIN</div>
+          <div class="placement-detail">LVL 26</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Achievements -->
+    <div class="achievements-card primary-achievements" id="achievements">
+      <div class="achievements-title">ACHIEVEMENTS</div>
+      <div class="achievements-row">
+        <div class="achievement" data-tooltip="Лерой Дженкинс Санктуария" data-tooltip-details="Влетел в ран без тормозов и отдал персонажа быстрее всех, оставив самый ранний RIP забега." role="button" tabindex="0" aria-expanded="false">
+          <div class="ach-icon">🪦</div>
+          <div class="ach-label">LEROY JENKINS<br>OF SANCTUARY</div>
+        </div>
+        <div class="achievement" data-tooltip="Герой Тристрама... ой" data-tooltip-details="Почти дотянул до самого финиша, но потерял персонажа буквально перед Баалом, превратив героический ран в трагедию." role="button" tabindex="0" aria-expanded="false">
+          <div class="ach-icon">🔥</div>
+          <div class="ach-label">HERO OF TRISTRAM...<br>OOPS</div>
+        </div>
+        <div class="achievement" data-tooltip="Hardcore, not Speedcore" data-tooltip-details="Закрыл успешный ран, но по темпу решил, что осторожность важнее секунд. Самый медленный победный забег." role="button" tabindex="0" aria-expanded="false">
+          <div class="ach-icon">🐌</div>
+          <div class="ach-label">HARDCORE, NOT<br>SPEEDCORE</div>
+        </div>
+        <div class="achievement ach-rare" data-tooltip="Actually Prepared" data-tooltip-details="Единственный, кто действительно зашёл в забег подготовленным: нормальные резисты, нормальный план и меньше случайной боли." role="button" tabindex="0" aria-expanded="false">
+          <div class="ach-icon">🧠</div>
+          <div class="ach-label">ACTUALLY<br>PREPARED</div>
+        </div>
+        <div class="achievement" data-tooltip="Hardcore Veteran" data-tooltip-details="Самый аккуратный игрок забега: минимум смертельно опасных ситуаций, минимум рискованных моментов и максимум дисциплины." role="button" tabindex="0" aria-expanded="false">
+          <div class="ach-icon">🛡️</div>
+          <div class="ach-label">HARDCORE<br>VETERAN</div>
+        </div>
+        <div class="achievement ach-rare" data-tooltip="Не трогай этот пак" data-tooltip-details="Лучше всех чувствовал, какие пачки мобов не стоят драки, и делал самые умные скипы опасных врагов." role="button" tabindex="0" aria-expanded="false">
+          <div class="ach-icon">👑</div>
+          <div class="ach-label">DON'T TOUCH<br>THAT PACK</div>
+        </div>
+        <div class="achievement" data-tooltip="Rakanishu!" data-tooltip-details="Самый громкий, эмоциональный и запоминающийся RIP — тот самый вайб, который все потом ещё долго цитировали." role="button" tabindex="0" aria-expanded="false">
+          <div class="ach-icon">🧌</div>
+          <div class="ach-label">RAKANISHU!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2nd Place -->
+  <div class="placement-row second-row">
+    <div class="placement-card second-place">
+      <div class="placement-rank">2ND PLACE</div>
+      <div class="placement-body">
+        <div class="placement-portrait portrait-assassin">
+          <img src="/d2hc/assets/images/portraits/assassin-portrait.png" alt="Assassin portrait" loading="lazy" decoding="async" />
+        </div>
+        <div class="placement-info">
+          <div class="placement-name">HardKurka</div>
+          <div class="placement-detail"><span class="detail-icon"><img src="/d2hc/assets/images/skills/fire-assassin-skill.png" alt="" loading="lazy" decoding="async" /></span> Fire Trap ASSASSIN</div>
+          <div class="placement-detail"> LVL 24</div>
+        </div>
+      </div>
+    </div>
+    <div class="achievements-card second-achievements">
+      <div class="achievements-title">ACHIEVEMENTS</div>
+      <div class="achievements-row">
+        <div class="achievement" data-tooltip="Wall Enjoyer" data-tooltip-details="Абсолютный рекордсмен по застреваниям в MaggoT Lair. Каждая стена была изучена лично и с любовью." role="button" tabindex="0" aria-expanded="false">
+          <div class="ach-icon">🧱</div>
+          <div class="ach-label">WALL<br>ENJOYER</div>
+        </div>
+        <div class="achievement" data-tooltip="Сын Курьера" data-tooltip-details="Лучший movemenT и самые быстрые сплиты забега. Летел по маршруту так, будто карту доставили заранее." role="button" tabindex="0" aria-expanded="false">
+          <div class="ach-icon">🏃</div>
+          <div class="ach-label">SON OF <br>COURIER</div>
+        </div>
+        <div class="achievement" data-tooltip="Trust Me Guys" data-tooltip-details="Сделал якобы безопасный мув, уверенно нажал вперёд — и тут же превратил это решение в RIP-момент." role="button" tabindex="0" aria-expanded="false">
+          <div class="ach-icon">🤡</div>
+          <div class="ach-label">TRUST ME<br>GUYS</div>
+        </div>
+        <div class="achievement ach-rare" data-tooltip="Khalim?" data-tooltip-details="Забыл мозги в сундуке. План был хорош, но где-то между локами потерялась самая важная часть цепа." role="button" tabindex="0" aria-expanded="false">
+          <div class="ach-icon">🧠</div>
+          <div class="ach-label">KHALIM?</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- THE JOURNEY -->
+<section class="journey" id="journey">
+  <div class="section-title">
+    <span class="title-ornament">◆</span>
+    THE JOURNEY
+    <span class="title-ornament">◆</span>
+  </div>
+
+  <div class="journey-cards">
+    <div class="journey-card dead">
+      <div class="journey-portrait">
+        <img src="/d2hc/assets/images/characters/paladin.png" alt="Paladin portrait" loading="lazy" decoding="async" />
+      </div>
+      <div class="journey-name">HardPeTuh</div>
+      <div class="journey-detail">⛨ PALADIN</div>
+      <div class="journey-detail">LVL 22</div>
+      <div class="journey-status slain">SLAIN</div>
+      <div class="journey-cause">Trapped by Sigil Demons</div>
+      <div class="journey-skull"><img class="skull-icon skull-icon-journey" src="/d2hc/assets/images/icons/skull.png" alt="" /></div>
+    </div>
+    <div class="journey-card dead">
+      <div class="journey-portrait">
+        <img src="/d2hc/assets/images/characters/warlock.png" alt="Warlock portrait" loading="lazy" decoding="async" />
+      </div>
+      <div class="journey-name">Hardkok</div>
+      <div class="journey-detail">🕮 WARLOCK</div>
+      <div class="journey-detail">LVL 24</div>
+      <div class="journey-status slain">SLAIN</div>
+      <div class="journey-cause">ANCHIENTS</div>
+      <div class="journey-skull"><img class="skull-icon skull-icon-journey" src="/d2hc/assets/images/icons/skull.png" alt="" /></div>
+    </div>
+    <div class="journey-card dead">
+      <div class="journey-portrait">
+        <img src="/d2hc/assets/images/characters/paladin.png" alt="Paladin portrait" loading="lazy" decoding="async" />
+      </div>
+      <div class="journey-name">Noname loh</div>
+      <div class="journey-detail">⛨ PALADIN</div>
+      <div class="journey-detail">LVL 5</div>
+      <div class="journey-status slain slain-red">SLAIN</div>
+      <div class="journey-cause">RAKANISHU</div>
+      <div class="journey-skull"><img class="skull-icon skull-icon-journey" src="/d2hc/assets/images/icons/skull.png" alt="" /></div>
+    </div>
+    <div class="journey-card dead">
+      <div class="journey-portrait">
+        <img src="/d2hc/assets/images/characters/paladin.png" alt="Paladin portrait" loading="lazy" decoding="async" />
+      </div>
+      <div class="journey-name">HardPeTushara</div>
+      <div class="journey-detail">⛨ PALADIN</div>
+      <div class="journey-detail">LVL 21</div>
+      <div class="journey-status slain">SLAIN</div>
+      <div class="journey-cause">MEPHISTO</div>
+      <div class="journey-skull"><img class="skull-icon skull-icon-journey" src="/d2hc/assets/images/icons/skull.png" alt="" /></div>
+    </div>
+    <div class="journey-card survived">
+      <div class="journey-portrait">
+        <img src="/d2hc/assets/images/characters/assassin.png" alt="Assassin portrait" loading="lazy" decoding="async" />
+      </div>
+      <div class="journey-name">HardKurka</div>
+      <div class="journey-detail">⚔ ASSASSIN</div>
+      <div class="journey-detail">LVL 24</div>
+      <div class="journey-status survived-text">SURVIVED</div>
+      <div class="journey-cause">BAAL DEFEATED</div>
+      <div class="journey-skull"><img class="skull-icon topaz-icon-journey" src="/d2hc/assets/images/items/flawless-topaz.png" alt="" /></div>
+    </div>
+    <div class="journey-card survived">
+      <div class="journey-portrait">
+        <img src="/d2hc/assets/images/characters/paladin.png" alt="Paladin portrait" loading="lazy" decoding="async" />
+      </div>
+      <div class="journey-name">ADDA</div>
+      <div class="journey-detail">⛨ PALADIN</div>
+      <div class="journey-detail">LVL 26</div>
+      <div class="journey-status survived-text">SURVIVED</div>
+      <div class="journey-cause">BAAL DEFEATED</div>
+      <div class="journey-skull survived-icon"><img class="skull-icon topaz-icon-journey" src="/d2hc/assets/images/items/perfect-topaz.png" alt="" /></div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="stats" id="stats">
+  <div class="stats-grid">
+    <div class="stat-item">
+      <div class="stat-icon"><img class="skull-icon skull-icon-stat" src="/d2hc/assets/images/icons/skull.png" alt="" /></div>
+      <div class="stat-value">4</div>
+      <div class="stat-label">DEATHS</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-icon"><img class="skull-icon character-icon-stat" src="/d2hc/assets/images/icons/character-icon.png" alt="" /></div>
+      <div class="stat-value">6</div>
+      <div class="stat-label">CHARACTERS</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-icon"><img class="skull-icon move-speed-icon-stat" src="/d2hc/assets/images/icons/move-speed-icon.png" alt="" /></div>
+      <div class="stat-value">3:32:17</div>
+      <div class="stat-label">BEST TIME</div> 
+    </div>
+    <div class="stat-item">
+      <div class="stat-icon"><img class="skull-icon kill-icon-stat" src="/d2hc/assets/images/icons/kill-icon.png" alt="" /></div>
+      <div class="stat-value">19</div>
+      <div class="stat-label">BOSS KILLS</div>
+    </div>
+    <div class="stat-item nfc-block">
+      <div class="nfc-badge">NFC</div>
+      <div class="nfc-info">
+        <div class="nfc-title">VERIFIED TROPHY ✔</div>
+        <div class="nfc-detail">TROPHY ID<br>HC-1656-1488</div>
+        <div class="nfc-detail">SCAN CONFIRMED</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER NAV -->
+<footer class="bottom-nav">
+  <nav>
+    <a href="#hero" class="nav-link nav-gold">TOP</a>
+    <a href="#placements" class="nav-link">ACHIEVEMENTS</a>
+    <span class="nav-emblem"><img class="nav-emblem-icon" src="/d2hc/assets/images/icons/logo-icon.png" alt="" /></span>
+    <a href="#journey" class="nav-link">THE JOURNEY</a>
+    <a href="#stats" class="nav-link">INFO</a>
+  </nav>
+</footer>
+
+<script src="/d2hc/assets/js/scripts.js"></script>
+</body>
+</html>
+
