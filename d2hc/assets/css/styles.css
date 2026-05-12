@@ -119,6 +119,11 @@ body {
   color: var(--bone);
   font-size: 15px;
   letter-spacing: 2.4px;
+  margin-top: 8px;
+}
+.year {
+  display: block;
+  line-height: 1;
 }
 .year-icon { margin-right: 6px; }
 
@@ -873,6 +878,8 @@ body {
 .first-place {
   border-color: var(--red);
   box-shadow: 0 0 20px var(--glow-red), inset 0 0 20px var(--glow-red);
+  display: flex;
+  flex-direction: column;
 }
 .first-place .card-glow {
   position: absolute; inset: -1px;
@@ -901,6 +908,44 @@ body {
   display: flex;
   align-items: center;
   gap: 16px;
+}
+
+.first-place .placement-rank {
+  margin-bottom: 18px;
+}
+
+.first-place .placement-body {
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+  gap: 22px;
+  text-align: center;
+  padding: 6px 0;
+}
+
+.first-place .placement-portrait {
+  width: 118px;
+  height: 118px;
+  flex-basis: 118px;
+}
+
+.first-place .placement-info {
+  width: 100%;
+}
+
+.first-place .placement-name {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.first-place .placement-detail {
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.first-place .placement-detail:last-child {
+  margin-bottom: 0;
 }
 
 .placement-portrait {
@@ -975,16 +1020,19 @@ body {
   gap: 12px;
 }
 
-.primary-achievements .achievements-row {
+.primary-achievements .achievements-row,
+.second-achievements .achievements-row {
   flex-wrap: wrap;
 }
 
-.primary-achievements .achievement {
+.primary-achievements .achievement,
+.second-achievements .achievement {
   width: calc(25% - 9px);
   min-width: 92px;
 }
 
-.primary-achievements .ach-label {
+.primary-achievements .ach-label,
+.second-achievements .ach-label {
   font-size: 9px;
 }
 .achievement {
@@ -1449,6 +1497,27 @@ body {
     flex: 1;
   }
   .second-row .placement-card { flex: 1; }
+  .first-place .placement-body {
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 16px;
+    text-align: left;
+    padding: 0;
+  }
+  .first-place .placement-portrait {
+    width: 90px;
+    height: 90px;
+    flex-basis: 90px;
+  }
+  .first-place .placement-name {
+    font-size: 18px;
+    margin-bottom: 6px;
+  }
+  .first-place .placement-detail {
+    font-size: 13px;
+    margin-bottom: 2px;
+  }
   .placement-rank,
   .achievements-title,
   .section-title,
@@ -1461,14 +1530,17 @@ body {
     -webkit-overflow-scrolling: touch;
     padding-bottom: 8px;
   }
-  .primary-achievements .achievements-row {
+  .primary-achievements .achievements-row,
+  .second-achievements .achievements-row {
     flex-wrap: nowrap;
   }
-  .primary-achievements .achievement {
+  .primary-achievements .achievement,
+  .second-achievements .achievement {
     width: 72px;
     min-width: 72px;
   }
-  .primary-achievements .ach-label {
+  .primary-achievements .ach-label,
+  .second-achievements .ach-label {
     font-size: 10px;
   }
   .achievement { flex-shrink: 0; }
@@ -1587,4 +1659,3 @@ body {
     opacity: 0.42;
   }
 }
-
