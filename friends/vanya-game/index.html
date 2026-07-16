@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Мой Город — тапай и живи!</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <header id="topbar">
+    <div class="money-row">
+      <span class="money"><span id="money">0</span> ₽</span>
+      <span class="passive" id="passive"></span>
+    </div>
+    <div class="level-row">
+      <span class="level-badge" id="levelBadge">Ур. 1</span>
+      <div class="xpbar">
+        <div class="xp-fill" id="xpFill"></div>
+        <span class="xp-text" id="xpText"></span>
+      </div>
+      <span class="life-badge" id="lifeBadge" title="Уровень жизни">🌟 10</span>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ЭКРАН: ТАПАТЬ -->
+    <section id="screen-tap" class="screen active">
+      <div class="task-hint" id="tapTaskHint"></div>
+      <div class="tap-zone" id="tapZone">
+        <div class="boost-chip hidden" id="boostChip"></div>
+        <button id="tapBtn" aria-label="Тапни, чтобы заработать">
+          <span class="avatar-emoji" id="avatarEmoji">🧒</span>
+        </button>
+        <div class="per-tap" id="perTap">+1 ₽ за тап</div>
+      </div>
+      <div class="upgrade-card">
+        <div class="upgrade-info">
+          <div class="upgrade-title">💪 Прокачать тап</div>
+          <div class="upgrade-desc" id="upgradeDesc">+1 ₽ за тап</div>
+        </div>
+        <button class="btn buy-btn" id="upgradeBtn">100 ₽</button>
+      </div>
+    </section>
+
+    <!-- ЭКРАН: ГОРОД -->
+    <section id="screen-city" class="screen">
+      <div class="city-hint">🖐️ Тяни карту, тапай по зданиям</div>
+      <div id="cityViewport">
+        <div id="cityMap"></div>
+      </div>
+    </section>
+
+    <!-- ЭКРАН: ЗАДАНИЯ -->
+    <section id="screen-tasks" class="screen">
+      <div class="screen-pad" id="tasksList"></div>
+    </section>
+
+    <!-- ЭКРАН: ПРОФИЛЬ -->
+    <section id="screen-profile" class="screen">
+      <div class="screen-pad" id="profileBox"></div>
+    </section>
+
+  </main>
+
+  <nav id="tabbar">
+    <button class="tab active" data-screen="tap"><span>👆</span>Тапать</button>
+    <button class="tab" data-screen="city"><span>🏙️</span>Город<b class="tab-dot hidden" id="cityDot"></b></button>
+    <button class="tab" data-screen="tasks"><span>📋</span>Задания<b class="tab-dot hidden" id="taskDot"></b></button>
+    <button class="tab" data-screen="profile"><span>🧍</span>Профиль</button>
+  </nav>
+
+  <div id="modalWrap" class="hidden">
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+    <div id="modal"></div>
+  </div>
+
+  <div id="toastWrap"></div>
+  <div id="confettiBox"></div>
+</div>
+
+<script src="data.js"></script>
+<script src="game.js"></script>
+<script src="ui.js"></script>
+</body>
+</html>
