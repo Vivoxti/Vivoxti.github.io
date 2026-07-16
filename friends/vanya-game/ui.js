@@ -14,8 +14,8 @@ var UI = {};
   UI.refreshHUD = function () {
     $('money').textContent = fmt(state.money);
     var income = passiveIncome();
-    $('passive').textContent = income > 0 ? '+' + fmt(income) + ' ₽/сек' : '';
-    $('levelBadge').textContent = 'Ур. ' + state.level;
+    $('passive').textContent = income > 0 ? '+' + fmt(income) + t('perSecSuffix') : '';
+    $('levelBadge').textContent = t('levelShort', { n: state.level });
     var need = xpNeed(state.level);
     var pct = Math.min(100, state.xp / need * 100);
     $('xpFill').style.width = pct + '%';
@@ -23,10 +23,10 @@ var UI = {};
     $('lifeBadge').textContent = '🌟 ' + fmt(lifeScore());
 
     // экран «Тапать»
-    $('perTap').textContent = '+' + fmt(tapValue()) + ' ₽ за тап';
+    $('perTap').textContent = t('perTap', { n: fmt(tapValue()) });
     $('avatarEmoji').textContent = lifeTier().emoji;
     var cost = upgradeCost();
-    $('upgradeDesc').textContent = '+' + upgradeGain() + ' ₽ к тапу';
+    $('upgradeDesc').textContent = t('upgradeDesc', { n: upgradeGain() });
     var ub = $('upgradeBtn');
     ub.textContent = fmt(cost) + ' ₽';
     ub.disabled = state.money < cost;
@@ -36,7 +36,7 @@ var UI = {};
     if (state.boost && state.boost.until > Date.now()) {
       chip.classList.remove('hidden');
       var left = Math.ceil((state.boost.until - Date.now()) / 1000);
-      chip.textContent = '🔥 x' + state.boost.mult + ' — ' + left + ' сек';
+      chip.textContent = t('boostChip', { mult: state.boost.mult, sec: left });
     } else {
       chip.classList.add('hidden');
     }
@@ -45,8 +45,8 @@ var UI = {};
     var task = currentTask();
     var p = taskProgress(task);
     $('tapTaskHint').innerHTML = p.done
-      ? '✅ Задание готово! <b>Забери награду во вкладке «Задания»</b>'
-      : '🎯 ' + task.text + ' <b>(' + fmt(p.cur) + '/' + fmt(p.goal) + ')</b>';
+      ? t('taskDoneHint')
+      : t('taskHint', { text: trTaskText(task, state.taskIndex), cur: fmt(p.cur), goal: fmt(p.goal) });
     $('taskDot').classList.toggle('hidden', !p.done);
 
     // точка на «Город», если открылись новые здания
@@ -102,7 +102,7 @@ var UI = {};
   });
 
   $('upgradeBtn').addEventListener('click', function () {
-    if (buyUpgrade()) { soundBuy(); UI.toast('💪 Тап прокачан!'); }
+    if (buyUpgrade()) { soundBuy(); UI.toast(t('upgradeSuccessToast')); }
     else soundError();
     UI.refreshHUD();
   });
@@ -128,8 +128,8 @@ var UI = {};
         el.style.left = b.x + 'px';
         el.style.top = b.y + 'px';
         el.innerHTML = '<span class="b-emoji">' + b.emoji + '</span>' +
-          '<span class="b-name">' + b.name + '</span><br>' +
-          '<span class="b-lock">🔒 Ур. ' + b.level + '</span>';
+          '<span class="b-name"></span><br>' +
+          '<span class="b-lock"></span>';
         map.appendChild(el);
       });
       var home = document.createElement('div');
@@ -146,11 +146,13 @@ var UI = {};
       var locked = b.level > state.level;
       el.classList.toggle('locked', locked);
       el.classList.toggle('fresh', b.level === state.level && !locked);
+      el.querySelector('.b-name').textContent = trBuildingName(b);
+      el.querySelector('.b-lock').textContent = t('buildingLock', { n: b.level });
       el.querySelector('.b-lock').style.display = locked ? 'inline-block' : 'none';
     });
     var h = currentHome();
     $('homeMarker').innerHTML = '<span class="b-emoji">' + h.emoji + '</span>' +
-      '<span class="b-name">🏠 Твой дом: ' + h.name + '</span>';
+      '<span class="b-name">' + t('homeMarker', { name: trHomeName(h) }) + '</span>';
   };
 
   // Перетаскивание карты и тапы по зданиям.
@@ -164,7 +166,7 @@ var UI = {};
     if (!b) return;
     if (b.level > state.level) {
       soundError();
-      UI.toast('🔒 «' + b.name + '» откроется на ' + b.level + ' уровне!');
+      UI.toast(t('lockedToast', { name: trBuildingName(b), n: b.level }));
     } else {
       UI.openShop(b.id);
     }
@@ -225,19 +227,19 @@ var UI = {};
 
     var html = '<div class="modal-head">' +
       '<span class="m-emoji">' + b.emoji + '</span>' +
-      '<div><div class="m-title">' + b.name + '</div><div class="m-sub">' + b.desc + '</div></div>' +
+      '<div><div class="m-title">' + trBuildingName(b) + '</div><div class="m-sub">' + trBuildingDesc(b) + '</div></div>' +
       '<button class="modal-close" id="modalCloseBtn">✕</button></div>';
 
     b.items.forEach(function (it) {
       var tags = '';
-      if (it.life) tags += '<span class="tag life">+' + fmt(it.life) + ' 🌟 жизнь</span>';
-      if (it.tap) tags += '<span class="tag tap">+' + fmt(it.tap) + ' ₽/тап</span>';
-      if (it.income) tags += '<span class="tag income">+' + fmt(it.income) + ' ₽/сек</span>';
-      if (it.boost) tags += '<span class="tag boost">🔥 x' + it.boost.mult + ' на ' + it.boost.sec + ' сек</span>';
-      if (it.xp) tags += '<span class="tag xp">+' + fmt(it.xp) + ' XP</span>';
+      if (it.life) tags += '<span class="tag life">' + t('tagLife', { n: fmt(it.life) }) + '</span>';
+      if (it.tap) tags += '<span class="tag tap">' + t('tagTap', { n: fmt(it.tap) }) + '</span>';
+      if (it.income) tags += '<span class="tag income">' + t('tagIncome', { n: fmt(it.income) }) + '</span>';
+      if (it.boost) tags += '<span class="tag boost">' + t('tagBoost', { mult: it.boost.mult, sec: it.boost.sec }) + '</span>';
+      if (it.xp) tags += '<span class="tag xp">' + t('tagXp', { n: fmt(it.xp) }) + '</span>';
       html += '<div class="shop-item">' +
         '<span class="i-emoji">' + it.emoji + '</span>' +
-        '<div class="i-body"><div class="i-name">' + it.name + '</div><div class="i-tags">' + tags + '</div></div>' +
+        '<div class="i-body"><div class="i-name">' + trItemName(it) + '</div><div class="i-tags">' + tags + '</div></div>' +
         '<span class="i-action" data-item="' + it.id + '"></span></div>';
     });
 
@@ -260,19 +262,19 @@ var UI = {};
     document.querySelectorAll('.i-action').forEach(function (slot) {
       var it = ITEM_INDEX[slot.dataset.item].item;
       var ownedMark = null;
-      if (it.kind === 'item' && state.owned[it.id]) ownedMark = '✅ Куплено';
+      if (it.kind === 'item' && state.owned[it.id]) ownedMark = t('ownedItem');
       if (it.kind === 'home') {
-        if (state.home === it.id) ownedMark = '🏠 Живёшь тут';
+        if (state.home === it.id) ownedMark = t('ownedHome');
         else {
           var hr = state.home === 'home0' ? 0 : ITEM_INDEX[state.home].item.rank;
-          if (it.rank <= hr) ownedMark = '⬇️ Уже было';
+          if (it.rank <= hr) ownedMark = t('ownedLower');
         }
       }
       if (it.kind === 'transport') {
-        if (state.transport === it.id) ownedMark = '🚗 Твой';
+        if (state.transport === it.id) ownedMark = t('ownedTransport');
         else {
           var tr = state.transport ? ITEM_INDEX[state.transport].item.rank : 0;
-          if (it.rank <= tr) ownedMark = '⬇️ Уже было';
+          if (it.rank <= tr) ownedMark = t('ownedLower');
         }
       }
       if (ownedMark) {
@@ -289,11 +291,11 @@ var UI = {};
         if (res === 'ok') {
           var it = ITEM_INDEX[btn.dataset.buy].item;
           soundBuy();
-          UI.toast(it.emoji + ' ' + it.name + ' — куплено!');
+          UI.toast(t('buySuccessToast', { emoji: it.emoji, name: trItemName(it) }));
           UI.renderCity();
         } else if (res === 'noMoney') {
           soundError();
-          UI.toast('😕 Не хватает денег — иди тапай!');
+          UI.toast(t('buyFailToast'));
         }
         UI.refreshHUD();
         refreshShopButtons();
@@ -313,36 +315,36 @@ var UI = {};
   // ---------- Задания ----------
   UI.renderTasks = function () {
     var box = $('tasksList');
-    var html = '<div class="section-title">📋 Задания</div>';
+    var html = '<div class="section-title">' + t('tasksTitle') + '</div>';
     if (state.taskIndex >= TASKS.length) {
-      html += '<div class="tasks-done-note">🏆 Основные задания выполнены! Дальше — бонусные.</div>';
+      html += '<div class="tasks-done-note">' + t('tasksAllDone') + '</div>';
     }
     var task = currentTask();
     var p = taskProgress(task);
     var pct = Math.min(100, p.cur / p.goal * 100);
     html += '<div class="task-card current">' +
-      '<div class="task-top"><div class="task-name">' + task.text + '</div>' +
+      '<div class="task-top"><div class="task-name">' + trTaskText(task, state.taskIndex) + '</div>' +
       '<div class="task-reward">' + (task.money ? '+' + fmt(task.money) + ' ₽' : '') + (task.xp ? ' +' + fmt(task.xp) + ' XP' : '') + '</div></div>' +
       '<div class="task-progress"><div class="task-progress-fill" style="width:' + pct + '%"></div>' +
       '<div class="task-progress-text">' + fmt(p.cur) + ' / ' + fmt(p.goal) + '</div></div>' +
       '<button class="btn task-claim" id="claimBtn" ' + (p.done ? '' : 'disabled') + '>' +
-      (p.done ? '🎁 Забрать награду!' : 'Выполни задание') + '</button></div>';
+      (p.done ? t('taskClaimBtn') : t('taskNotDoneBtn')) + '</button></div>';
 
     // следующие два задания — превью
     for (var i = 1; i <= 2; i++) {
-      var t = getTask(state.taskIndex + i);
+      var future = getTask(state.taskIndex + i);
       html += '<div class="task-card future"><div class="task-top">' +
-        '<div class="task-name">🔜 ' + t.text + '</div>' +
-        '<div class="task-reward">' + (t.money ? '+' + fmt(t.money) + ' ₽' : '') + '</div></div></div>';
+        '<div class="task-name">' + t('previewPrefix') + trTaskText(future, state.taskIndex + i) + '</div>' +
+        '<div class="task-reward">' + (future.money ? '+' + fmt(future.money) + ' ₽' : '') + '</div></div></div>';
     }
-    html += '<div class="tasks-done-note">Выполнено заданий: <b>' + state.taskIndex + '</b></div>';
+    html += '<div class="tasks-done-note">' + t('tasksCompletedCount', { n: state.taskIndex }) + '</div>';
     box.innerHTML = html;
     var claim = $('claimBtn');
     if (claim) claim.addEventListener('click', function () {
-      var t = currentTask();
+      var tsk = currentTask();
       if (claimTask()) {
         soundTask();
-        UI.toast('🎉 Награда: +' + fmt(t.money) + ' ₽, +' + fmt(t.xp) + ' XP');
+        UI.toast(t('claimToast', { money: fmt(tsk.money), xp: fmt(tsk.xp) }));
         UI.renderTasks();
         UI.refreshHUD();
       }
@@ -357,39 +359,45 @@ var UI = {};
     var tr = currentTransport();
     var box = $('profileBox');
 
+    var tierName = trLifeTierName(tier.idx);
     var tierPct = next ? Math.min(100, (tier.score - tier.min) / (next.min - tier.min) * 100) : 100;
     var html = '<div class="profile-head">' +
       '<div class="profile-avatar">' + tier.emoji + '</div>' +
-      '<div class="profile-tier">' + tier.name + '</div>' +
-      '<div class="profile-life">🌟 Уровень жизни: ' + fmt(tier.score) + '</div>' +
+      '<div class="profile-tier">' + tierName + '</div>' +
+      '<div class="profile-life">' + t('profileLifeLevel', { n: fmt(tier.score) }) + '</div>' +
       '<div class="tier-bar"><div class="tier-fill" style="width:' + tierPct + '%"></div></div>' +
-      (next ? '<div class="tier-next">До «' + next.name + '»: ещё ' + fmt(next.min - tier.score) + ' 🌟</div>'
-            : '<div class="tier-next">👑 Ты достиг вершины!</div>') +
+      (next ? '<div class="tier-next">' + t('tierNext', { name: trLifeTierName(next.idx), n: fmt(next.min - tier.score) }) + '</div>'
+            : '<div class="tier-next">' + t('tierMax') + '</div>') +
       '</div>';
 
-    html += '<div class="mystuff"><div class="section-title">🏠 Как ты живёшь</div><div class="stuff-row">' +
-      '<div class="stuff-slot"><div class="s-emoji">' + home.emoji + '</div><div class="s-label">ЖИЛЬЁ</div><div class="s-name">' + home.name + '</div></div>' +
-      '<div class="stuff-slot"><div class="s-emoji">' + (tr ? tr.emoji : '🚶') + '</div><div class="s-label">ТРАНСПОРТ</div><div class="s-name">' + (tr ? tr.name : 'Пешком') + '</div></div>' +
+    html += '<div class="mystuff"><div class="section-title">' + t('howYouLive') + '</div><div class="stuff-row">' +
+      '<div class="stuff-slot"><div class="s-emoji">' + home.emoji + '</div><div class="s-label">' + t('labelHome') + '</div><div class="s-name">' + trHomeName(home) + '</div></div>' +
+      '<div class="stuff-slot"><div class="s-emoji">' + (tr ? tr.emoji : '🚶') + '</div><div class="s-label">' + t('labelTransport') + '</div><div class="s-name">' + (tr ? trItemName(tr) : t('onFoot')) + '</div></div>' +
       '</div>';
 
     var chips = '';
     for (var id in state.owned) {
       var e = ITEM_INDEX[id];
-      if (e) chips += '<span class="owned-chip">' + e.item.emoji + ' ' + e.item.name + '</span>';
+      if (e) chips += '<span class="owned-chip">' + e.item.emoji + ' ' + trItemName(e.item) + '</span>';
     }
-    html += '<div class="section-title" style="margin-top:10px">🎒 Твои вещи</div>' +
-      '<div class="owned-grid">' + (chips || '<span class="owned-chip">Пока пусто — иди по магазинам!</span>') + '</div></div>';
+    html += '<div class="section-title" style="margin-top:10px">' + t('yourStuff') + '</div>' +
+      '<div class="owned-grid">' + (chips || '<span class="owned-chip">' + t('emptyStuff') + '</span>') + '</div></div>';
 
-    html += '<div class="mystuff"><div class="section-title">📊 Статистика</div><div class="stats-list">' +
-      '👆 Тапов сделано: <b>' + fmt(state.totalTaps) + '</b><br>' +
-      '💰 Всего заработано: <b>' + fmt(state.totalEarned) + ' ₽</b><br>' +
-      '🛍️ Всего потрачено: <b>' + fmt(state.totalSpent) + ' ₽</b><br>' +
-      '📦 Покупок: <b>' + state.purchases + '</b><br>' +
-      '✅ Заданий выполнено: <b>' + state.taskIndex + '</b></div></div>';
+    html += '<div class="mystuff"><div class="section-title">' + t('statsTitle') + '</div><div class="stats-list">' +
+      t('statTaps', { n: fmt(state.totalTaps) }) + '<br>' +
+      t('statEarned', { n: fmt(state.totalEarned) }) + '<br>' +
+      t('statSpent', { n: fmt(state.totalSpent) }) + '<br>' +
+      t('statPurchases', { n: state.purchases }) + '<br>' +
+      t('statTasks', { n: state.taskIndex }) + '</div></div>';
+
+    html += '<div class="mystuff"><div class="section-title">' + t('languageTitle') + '</div><div class="lang-row">' +
+      LANGS.map(function (l) {
+        return '<button class="btn lang-btn' + (curLang() === l ? ' active' : '') + '" data-lang="' + l + '">' + LANG_LABELS[l] + '</button>';
+      }).join('') + '</div></div>';
 
     html += '<div class="profile-actions">' +
-      '<button class="btn gray" id="muteBtn">' + (state.muted ? '🔇 Звук выкл' : '🔊 Звук вкл') + '</button>' +
-      '<button class="btn danger" id="resetBtn">🗑️ Начать заново</button></div>';
+      '<button class="btn gray" id="muteBtn">' + (state.muted ? t('soundOff') : t('soundOn')) + '</button>' +
+      '<button class="btn danger" id="resetBtn">' + t('resetBtn') + '</button></div>';
 
     box.innerHTML = html;
     $('muteBtn').addEventListener('click', function () {
@@ -398,10 +406,13 @@ var UI = {};
       UI.renderProfile();
     });
     $('resetBtn').addEventListener('click', function () {
-      if (confirm('Точно начать игру заново? Весь прогресс удалится!')) {
+      if (confirm(t('resetConfirm'))) {
         resetGame();
         location.reload();
       }
+    });
+    document.querySelectorAll('.lang-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () { setLang(btn.dataset.lang); });
     });
   };
 
@@ -409,19 +420,20 @@ var UI = {};
   UI.onLevelUp = function (newLevel, unlockedBuildings) {
     soundLevelUp();
     UI.confetti();
-    var text = 'Ты стал круче!';
+    var text = t('levelUpDefaultText');
     if (unlockedBuildings.length > 0) {
-      text = 'Открылось: ' + unlockedBuildings.map(function (b) { return b.emoji + ' <b>' + b.name + '</b>'; }).join(', ') + '. Загляни в город!';
+      var list = unlockedBuildings.map(function (b) { return b.emoji + ' <b>' + trBuildingName(b) + '</b>'; }).join(', ');
+      text = t('levelUpUnlocked', { list: list });
       $('cityDot').classList.remove('hidden');
     }
-    UI.centerModal('🎉', 'Уровень ' + newLevel + '!', text, 'Ура!');
+    UI.centerModal('🎉', t('levelUpTitle', { n: newLevel }), text, t('levelUpBtn'));
   };
 
   UI.onVictory = function () {
     soundLevelUp();
     UI.confetti();
     setTimeout(UI.confetti, 600);
-    UI.centerModal('👑', 'ТЫ — ЛЕГЕНДА ГОРОДА!', 'Весь город теперь твой! Ты прошёл путь от комнаты в коммуналке до хозяина города. Игра пройдена, но можно продолжать играть!', 'Я — легенда! 👑');
+    UI.centerModal('👑', t('victoryTitle'), t('victoryText'), t('victoryBtn'));
   };
 
   UI.centerModal = function (emoji, title, text, btnText) {
@@ -468,15 +480,29 @@ var UI = {};
     }
   };
 
+  // ---------- Язык ----------
+  UI.applyLanguage = function () {
+    document.documentElement.lang = curLang() === 'ua' ? 'uk' : curLang();
+    document.title = t('appTitle');
+    document.querySelectorAll('[data-i18n]').forEach(function (el) { el.textContent = t(el.dataset.i18n); });
+    document.querySelectorAll('[data-i18n-title]').forEach(function (el) { el.title = t(el.dataset.i18nTitle); });
+    document.querySelectorAll('[data-i18n-arialabel]').forEach(function (el) { el.setAttribute('aria-label', t(el.dataset.i18nArialabel)); });
+    UI.refreshHUD();
+    UI.renderCity();
+    UI.renderTasks();
+    UI.renderProfile();
+    if (openBuildingId && !$('modalWrap').classList.contains('hidden')) UI.openShop(openBuildingId);
+  };
+
   // ---------- Запуск ----------
   loadGame();
   var offline = computeOfflineGain();
   prevUnlockedCount = BUILDINGS.filter(function (b) { return b.level <= state.level; }).length;
-  UI.refreshHUD();
+  UI.applyLanguage();
   if (offline) {
-    UI.centerModal('💤', 'Пока тебя не было...',
-      'Твои бизнесы работали <b>' + fmtTime(offline.seconds) + '</b> и заработали <b>' + fmt(offline.gain) + ' ₽</b>!',
-      'Забрать деньги 💰');
+    UI.centerModal('💤', t('offlineTitle'),
+      t('offlineText', { time: fmtTime(offline.seconds), gain: fmt(offline.gain) }),
+      t('offlineBtn'));
   }
   saveGame();
 })();

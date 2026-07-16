@@ -414,6 +414,10 @@ html, body {
 .profile-actions { display: flex; gap: 10px; }
 .profile-actions .btn { flex: 1; }
 
+.lang-row { display: flex; gap: 8px; }
+.lang-btn { flex: 1; background: linear-gradient(180deg, #8b97b1, #6b7893); box-shadow: 0 3px 0 #55617a; }
+.lang-btn.active { background: linear-gradient(180deg, #5b8cff, #3d6ce0); box-shadow: 0 3px 0 #2a4dab; }
+
 /* ===== Нижнее меню ===== */
 #tabbar {
   display: flex;

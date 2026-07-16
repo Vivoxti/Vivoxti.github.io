@@ -24,7 +24,16 @@ function defaultState() {
     muted: false,
     lastSeen: Date.now(),
     won: false,
+    lang: 'ru',
   };
+}
+
+// ---------- Язык ----------
+function setLang(lang) {
+  if (LANGS.indexOf(lang) === -1 || lang === state.lang) return;
+  state.lang = lang;
+  saveGame();
+  UI.applyLanguage();
 }
 
 // ---------- Сохранение ----------
@@ -125,16 +134,17 @@ function lifeScore() {
 function lifeTier() {
   var score = lifeScore();
   var tier = LIFE_TIERS[0];
+  var idx = 0;
   for (var i = 0; i < LIFE_TIERS.length; i++) {
-    if (score >= LIFE_TIERS[i][0]) tier = LIFE_TIERS[i];
+    if (score >= LIFE_TIERS[i][0]) { tier = LIFE_TIERS[i]; idx = i; }
   }
-  return { min: tier[0], name: tier[1], emoji: tier[2], score: score };
+  return { min: tier[0], name: tier[1], emoji: tier[2], score: score, idx: idx };
 }
 
 function nextLifeTier() {
   var score = lifeScore();
   for (var i = 0; i < LIFE_TIERS.length; i++) {
-    if (score < LIFE_TIERS[i][0]) return { min: LIFE_TIERS[i][0], name: LIFE_TIERS[i][1] };
+    if (score < LIFE_TIERS[i][0]) return { min: LIFE_TIERS[i][0], name: LIFE_TIERS[i][1], idx: i };
   }
   return null;
 }
@@ -351,19 +361,20 @@ function soundError() { beep(180, 0.15, 'sawtooth', 0.05); }
 // ---------- Форматирование чисел ----------
 function fmt(n) {
   n = Math.floor(n);
-  if (n >= 1e9) return trim1(n / 1e9) + ' млрд';
-  if (n >= 1e6) return trim1(n / 1e6) + ' млн';
-  if (n >= 1e4) return trim1(n / 1e3) + ' тыс';
-  return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  var glue = curLang() === 'en';
+  if (n >= 1e9) return trim1(n / 1e9) + (glue ? '' : ' ') + trUnit('billion');
+  if (n >= 1e6) return trim1(n / 1e6) + (glue ? '' : ' ') + trUnit('million');
+  if (n >= 1e4) return trim1(n / 1e3) + (glue ? '' : ' ') + trUnit('thousand');
+  return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, glue ? ',' : ' ');
 }
 function trim1(x) {
   var v = Math.floor(x * 10) / 10;
   return (v % 1 === 0 ? String(Math.floor(v)) : String(v).replace('.', ','));
 }
 function fmtTime(sec) {
-  if (sec >= 3600) return Math.floor(sec / 3600) + ' ч ' + Math.floor((sec % 3600) / 60) + ' мин';
-  if (sec >= 60) return Math.floor(sec / 60) + ' мин';
-  return sec + ' сек';
+  if (sec >= 3600) return Math.floor(sec / 3600) + ' ' + trUnit('hour') + ' ' + Math.floor((sec % 3600) / 60) + ' ' + trUnit('minute');
+  if (sec >= 60) return Math.floor(sec / 60) + ' ' + trUnit('minute');
+  return sec + ' ' + trUnit('second');
 }
 
 // ---------- Игровой цикл ----------
