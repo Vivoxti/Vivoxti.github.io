@@ -24,7 +24,7 @@ function defaultState() {
     muted: false,
     lastSeen: Date.now(),
     won: false,
-    lang: 'ru',
+    lang: 'ua',
   };
 }
 
