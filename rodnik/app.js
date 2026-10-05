@@ -262,7 +262,7 @@ function alignCoverButton({ afterTurn = false } = {}) {
   clearTimeout(coverAlignmentTimer);
   if (afterTurn && !reducedMotion.matches) {
     // Keep the control still while perspective temporarily stretches the lower edge.
-    coverAlignmentTimer = setTimeout(alignCoverButton, 1320);
+    coverAlignmentTimer = setTimeout(alignCoverButton, bookTime() + 20);
     return;
   }
   const until = performance.now() + (reducedMotion.matches ? 50 : 1450);
@@ -275,7 +275,7 @@ function alignCoverButton({ afterTurn = false } = {}) {
 }
 
 function placeCoverButton() {
-  const cover = ui.book.classList.contains('show-back') ? $('.cover-rear') : $('#front-cover');
+  const cover = backShowing() ? $('.cover-rear') : $('#front-cover');
   const left = cover.querySelector('.anchor-left').getBoundingClientRect();
   const right = cover.querySelector('.anchor-right').getBoundingClientRect();
   const float = $('#book-float').getBoundingClientRect();
@@ -390,6 +390,19 @@ function drawRibbon() {
   lightEdge.setAttribute('d', line(left));
   darkEdge.setAttribute('d', line(right));
 }
+// The book bobs gently; the lift and pace ease between the closed and open states.
+const float = { element: $('#book-float'), shadow: $('.ground-shadow'), phase: 0, lift: 13, period: 7 };
+function animateFloat(dt) {
+  const ease = 1 - Math.exp(-dt * 2.5);
+  float.lift += ((state.opened ? 3 : 13) - float.lift) * ease;
+  float.period += ((state.opened ? 9 : 7) - float.period) * ease;
+  float.phase = (float.phase + dt / float.period) % 1;
+  const wave = (1 - Math.cos(float.phase * Math.PI * 2)) / 2;
+  const depth = wave * float.lift / 13;
+  float.element.style.translate = `0 ${(-wave * float.lift).toFixed(2)}px`;
+  float.shadow.style.setProperty('--breath-scale', (1 - depth * .09).toFixed(4));
+  float.shadow.style.setProperty('--breath-opacity', (1 - depth * .43).toFixed(4));
+}
 let ribbonFrame;
 let ribbonVisible = false;
 let ribbonLastTime;
@@ -411,6 +424,7 @@ function animateRibbon(time) {
     link.angle += link.velocity * dt;
   });
   drawRibbon();
+  animateFloat(dt);
   ribbonFrame = requestAnimationFrame(animateRibbon);
 }
 function updateRibbonMotion() {
@@ -420,70 +434,116 @@ function updateRibbonMotion() {
   if (reducedMotion.matches) {
     ribbonLinks.forEach((link) => { link.angle = link.velocity = 0; });
     drawRibbon();
+    float.element.style.translate = '';
+    float.shadow.style.removeProperty('--breath-scale');
+    float.shadow.style.removeProperty('--breath-opacity');
   } else if (ribbonVisible && !document.hidden) ribbonFrame = requestAnimationFrame(animateRibbon);
 }
 
-async function openBook() {
+const bookTime = () => reducedMotion.matches ? 1 : 1200; // Matches --book-time.
+const backShowing = () => ui.book.classList.contains('show-back') || ui.book.classList.contains('back-closed');
+
+// The back can be shown by spinning the closed book or by folding the last half over; both look identical at rest.
+function settleBack(folded) {
+  const moving = [ui.book, ...ui.book.querySelectorAll('.book-half, .book-spine')];
+  moving.forEach((element) => { element.style.transition = 'none'; });
+  ui.book.classList.toggle('show-back', !folded);
+  ui.book.classList.toggle('back-closed', folded);
+  ui.book.getBoundingClientRect();
+  moving.forEach((element) => { element.style.transition = ''; });
+}
+
+// The layout switches between the intro column and the centred reader; glide the stage across instead of jumping.
+function glideStage(before) {
+  if (reducedMotion.matches) return;
+  const after = ui.stage.getBoundingClientRect();
+  const dx = before.left + before.width / 2 - after.left - after.width / 2;
+  const dy = before.top + before.height / 2 - after.top - after.height / 2;
+  if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
+  ui.stage.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }], {
+    duration: bookTime(), easing: 'cubic-bezier(.45,.05,.2,1)',
+  });
+}
+
+// Keep the title where it was while it fades out of the reader layout.
+function pinIntro() {
+  const intro = $('.intro-copy');
+  const box = intro.getBoundingClientRect();
+  const frame = ui.experience.getBoundingClientRect();
+  intro.style.setProperty('--intro-left', `${box.left - frame.left}px`);
+  intro.style.setProperty('--intro-top', `${box.top - frame.top}px`);
+  intro.style.setProperty('--intro-width', `${box.width}px`);
+}
+
+async function openBook({ keepCursor = false } = {}) {
   if (!state.data || state.opened || state.busy) return;
   state.busy = true;
-  if (ui.book.classList.contains('show-back')) {
-    ui.book.classList.remove('show-back');
-    await pause(reducedMotion.matches ? 1 : 650);
+  const fromBack = backShowing();
+  if (fromBack) {
+    if (!keepCursor) state.cursor = lastReadingCursor();
+    if (ui.book.classList.contains('show-back')) settleBack(true);
   }
   state.opened = true;
   setTilt(0, 0);
-  nudgeRibbon(12);
-  state.busy = true;
+  nudgeRibbon(fromBack ? -12 : 12);
+  renderSpread();
+  const before = ui.stage.getBoundingClientRect();
+  pinIntro();
   document.body.classList.add('reading');
   $('#front-cover').setAttribute('aria-hidden', 'true');
   $('#front-cover').tabIndex = -1;
   ui.experience.classList.add('open');
+  ui.book.classList.remove('back-closed');
   ui.toolbar.hidden = false;
   ui.navigation.hidden = false;
-  renderSpread();
-  await pause(reducedMotion.matches ? 1 : 1250);
+  glideStage(before);
+  await pause(bookTime() + 50);
   state.busy = false;
   renderSpread();
   if (mobile.matches) ui.experience.scrollIntoView({ behavior: reducedMotion.matches ? 'instant' : 'smooth', block: 'start' });
 }
 
-async function closeBook() {
+async function closeBook({ toBack = false } = {}) {
   if (state.busy) return;
   const wasOpened = state.opened;
+  const turning = wasOpened || toBack !== backShowing();
+  state.busy = true;
+  const before = ui.stage.getBoundingClientRect();
   state.opened = false;
   tilt.base = null;
-  nudgeRibbon(-12);
+  nudgeRibbon(toBack ? 12 : -12);
   document.body.classList.remove('reading');
   $('#front-cover').setAttribute('aria-hidden', 'false');
   $('#front-cover').tabIndex = 0;
-  ui.experience.classList.remove('open');
-  if (wasOpened && !reducedMotion.matches) {
-    $('.intro-copy').animate([{ opacity: 0 }, { opacity: 1 }], {
-      duration: 300, delay: 70, easing: 'ease-out', fill: 'backwards',
-    });
+  if (wasOpened) {
+    // Fold the front half over to close at the start, or the back half over to close at the end.
+    ui.book.classList.remove('show-back');
+    ui.book.classList.toggle('back-closed', toBack);
+  } else if (turning) {
+    if (ui.book.classList.contains('back-closed')) settleBack(false);
+    ui.book.classList.toggle('show-back', toBack);
   }
-  ui.book.classList.remove('show-back');
+  ui.experience.classList.remove('open');
   ui.toolbar.hidden = true;
   ui.navigation.hidden = true;
+  if (wasOpened) glideStage(before);
   renderSpread();
-  history.replaceState(null, '', location.pathname + location.search);
-  $('#open-button').focus({ preventScroll: true });
-  $('#rotate-cover').innerHTML = 'Оборот обложки <span>↻</span>';
-  alignCoverButton();
+  history.replaceState(null, '', `${location.pathname}${location.search}${toBack ? '#page=back' : ''}`);
+  if (wasOpened) $('#open-button').focus({ preventScroll: true });
+  $('#rotate-cover').innerHTML = toBack ? 'Лицевая обложка <span>↻</span>' : 'Оборот обложки <span>↻</span>';
+  alignCoverButton({ afterTurn: turning });
+  await pause(turning ? bookTime() + 50 : 1);
+  state.busy = false;
+  updateNavigation();
 }
 
 async function showBackCover() {
   if (state.busy) return;
-  state.cursor = lastReadingCursor();
-  await closeBook();
-  state.busy = true;
-  ui.book.classList.add('show-back');
-  $('#rotate-cover').innerHTML = 'Лицевая обложка <span>↻</span>';
-  history.replaceState(null, '', `${location.pathname}${location.search}#page=back`);
-  alignCoverButton({ afterTurn: true });
-  await pause(reducedMotion.matches ? 1 : 1320);
-  state.busy = false;
-  updateNavigation();
+  if (state.cursor !== lastReadingCursor()) {
+    state.cursor = lastReadingCursor();
+    if (state.opened) renderSpread();
+  }
+  await closeBook({ toBack: true });
   ui.announcement.textContent = 'Задняя обложка книги.';
 }
 
@@ -520,10 +580,11 @@ async function turnPage(direction) {
   const clearBend = reducedMotion.matches ? () => {} : bendLeaf(duration, direction);
   const start = direction > 0 ? 0 : -180;
   const end = direction > 0 ? -180 : 0;
+  const leafZ = parseFloat(getComputedStyle(ui.book).getPropertyValue('--page-z')) + 2;
   const animation = ui.leaf.animate([
-    { transform: `translateZ(35px) rotateY(${start}deg) rotateX(0deg)`, offset: 0 },
-    { transform: `translateZ(55px) rotateY(${(start + end) / 2}deg) rotateX(${direction * -3}deg)`, offset: .5 },
-    { transform: `translateZ(35px) rotateY(${end}deg) rotateX(0deg)`, offset: 1 },
+    { transform: `translateZ(${leafZ}px) rotateY(${start}deg) rotateX(0deg)`, offset: 0 },
+    { transform: `translateZ(${leafZ + 20}px) rotateY(${(start + end) / 2}deg) rotateX(${direction * -3}deg)`, offset: .5 },
+    { transform: `translateZ(${leafZ}px) rotateY(${end}deg) rotateX(0deg)`, offset: 1 },
   ], { duration, easing: 'cubic-bezier(.25,.65,.25,1)', fill: 'forwards' });
   state.turn = animation;
   try { await animation.finished; } catch { /* Layout changes may finish a turn early. */ }
@@ -548,7 +609,7 @@ async function goToId(id) {
   if (state.busy) { await pause(100); return goToId(id); }
   if (id === 'back') return showBackCover();
   state.cursor = Math.floor(index / step()) * step();
-  await openBook();
+  await openBook({ keepCursor: true });
   renderSpread();
   updateHash(id);
 }
@@ -704,19 +765,13 @@ function bindEvents() {
   $('#front-cover').addEventListener('click', openBook);
   ui.stage.addEventListener('click', (event) => {
     if (state.opened || state.busy || !state.data || event.target.closest('#rotate-cover')) return;
-    const cover = ui.book.classList.contains('show-back') ? $('.cover-rear') : $('#front-cover');
+    const cover = backShowing() ? $('.cover-rear') : $('#front-cover');
     const bounds = cover.getBoundingClientRect();
     const onCover = event.clientX >= bounds.left - 4 && event.clientX <= bounds.right + 4
       && event.clientY >= bounds.top - 4 && event.clientY <= bounds.bottom + 4;
     if (onCover || ui.book.contains(event.target)) openBook();
   });
-  $('#rotate-cover').addEventListener('click', () => {
-    if (state.busy) return;
-    ui.book.classList.toggle('show-back');
-    nudgeRibbon(ui.book.classList.contains('show-back') ? 24 : -24);
-    $('#rotate-cover').innerHTML = ui.book.classList.contains('show-back') ? 'Лицевая обложка <span>↻</span>' : 'Оборот обложки <span>↻</span>';
-    alignCoverButton({ afterTurn: true });
-  });
+  $('#rotate-cover').addEventListener('click', () => closeBook({ toBack: !backShowing() }));
   $('#close-book').addEventListener('click', closeBook);
   let wheelTotal = 0;
   let lastWheelAt = 0;
@@ -741,7 +796,9 @@ function bindEvents() {
     const direction = Math.sign(wheelTotal);
     wheelTotal = 0;
     if (!state.opened) {
-      state.cursor = ui.book.classList.contains('show-back') ? lastReadingCursor() : 0;
+      // Scrolling forward opens the front cover; scrolling back opens the back cover.
+      if ((direction > 0) === backShowing()) return;
+      if (direction > 0) state.cursor = 0;
       openBook().then(() => { if (state.opened) updateHash(); });
     } else if (direction < 0 && state.cursor === 0) {
       closeBook();
