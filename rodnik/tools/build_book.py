@@ -3,11 +3,68 @@ from pathlib import Path
 import argparse
 import json
 import re
-import shutil
 import urllib.request
-from PIL import Image
+from PIL import Image, ImageFont
 
 SITE = Path(__file__).resolve().parents[1]
+COLS, ROWS = 28, 42
+
+
+def rect_percent(box, size, grid):
+    w,h = size
+    gx,gy = grid
+    x1,y1,x2,y2 = box
+    return [round((x1/gx+(COLS-w/gx)/2)/COLS*100,5),
+            round((y1/gy+(ROWS-h/gy)/2)/ROWS*100,5),
+            round((x2-x1)/gx/COLS*100,5), round((y2-y1)/gy/ROWS*100,5)]
+
+
+def prepare_ink(source, out, stem, measurement, entry):
+    image = Image.open(source/'Прозрачный_текст'/f'{stem}.png').convert('RGBA')
+    assert list(image.size) == measurement['size'], f'Recalibrate changed source: {stem}'
+    body = image.copy()
+    box = measurement.get('numberBox')
+    if box:
+        box = tuple(round(v/1000*(image.width if i%2==0 else image.height)) for i,v in enumerate(box))
+        number = image.crop(box)
+        body.paste((0,0,0,0),box)
+        bounds = number.getchannel('A').getbbox()
+        assert bounds, f'Empty handwritten number: {stem}'
+        number = number.crop(bounds)
+        number.save(out/'numbers'/f'{stem}.webp','WEBP',lossless=True,method=6)
+        entry['numberImage'] = f'assets/numbers/{stem}.webp?v=1'
+        entry['numberSize'] = list(number.size)
+        entry['numberLayout'] = [round(number.width/measurement['grid'][0]/COLS*100,5),
+                                 round(number.height/measurement['grid'][1]/ROWS*100,5)]
+        entry['numberBox'] = list(box)
+    bounds = body.getchannel('A').getbbox()
+    entry['sourceSize'] = list(image.size)
+    entry['grid'] = measurement['grid']
+    if bounds:
+        body = body.crop(bounds)
+        body.save(out/'pages'/f'{stem}.webp','WEBP',lossless=True,method=6)
+        entry.update(image=f'assets/pages/{stem}.webp?v=2',width=body.width,height=body.height,
+                     sourceBox=list(bounds),layout=rect_percent(bounds,image.size,measurement['grid']))
+
+
+def prepare_text(pages, out):
+    font = ImageFont.truetype(str(out/'fonts/Neucha.ttf'),100)
+    lengths = {p['id']:max((font.getlength(line)/100 for line in p['text'].splitlines()),default=0)
+               for p in pages if p['kind'] in ('page','contents')}
+    font_cells = min(.8, 25.8/max(lengths.values()))
+    max_lines = max(len(p['text'].splitlines()) for p in pages)
+    line_cells = min(1,39/max_lines)
+    for p in pages:
+        if p['kind'] not in ('page','contents') or not p['text']:
+            continue
+        width = lengths[p['id']]*font_cells
+        height = len(p['text'].splitlines())*line_cells
+        x,y,w,h = p.get('layout',[8,8,84,84])
+        left = min(max(1,(x+w/2)/100*COLS-width/2),COLS-width-1)
+        top = min(max(1,(y+h/2)/100*ROWS-height/2),ROWS-height-2)
+        p['textLayout'] = [round(left/COLS*100,5),round(top/ROWS*100,5),
+                           round(width/COLS*100,5),round(height/ROWS*100,5)]
+    return {'columns':COLS,'rows':ROWS,'textFontCells':round(font_cells,6),'textLineCells':round(line_cells,6)}
 
 
 def main():
@@ -17,8 +74,9 @@ def main():
     source = args.source
     out = SITE / 'assets'
     (out / 'pages').mkdir(parents=True, exist_ok=True)
+    (out / 'numbers').mkdir(exist_ok=True)
     (out / 'fonts').mkdir(exist_ok=True)
-    config = json.loads((source / '_Инструменты' / 'прозрачность.json').read_text(encoding='utf-8-sig'))
+    measurements = json.loads((SITE/'tools/page_layout.json').read_text(encoding='utf-8'))
     pages = [{'id': 'title', 'kind': 'title', 'text': 'Родник\nВалентин Лаврищев'}]
     texts = source / 'Расшифровки_TXT'
     stems = [f'{number:03}' for number in range(3, 165)]
@@ -33,26 +91,13 @@ def main():
         text = txt.read_text(encoding='utf-8-sig').strip('\n\r')
         if number is not None:
             text = '' if text.strip() == str(number) else re.sub(rf'\n\s*{number}\s*$', '', text).rstrip()
-        png = source / 'Прозрачный_текст' / f'{stem}.png'
-        image = Image.open(png).convert('RGBA')
-        # Exclude the old photographed footer; the website typesets a uniform page number.
-        regions = config.get(png.name, {}).get('regions', [])
-        body = [r if isinstance(r, list) else r['box'] for r in regions]
-        body = [r for r in body if r[1] < 920]
-        if body:
-            bottom = min(image.height, round(max(r[3] for r in body) / 1000 * image.height))
-            image = image.crop((0, 0, image.width, bottom))
-            bbox = image.getchannel('A').getbbox()
-        else:
-            bbox = None
         entry = {'id': stem, 'number': number, 'kind': 'page' if number else 'contents', 'text': text}
-        if bbox:
-            image = image.crop(bbox)
-            image.save(out / 'pages' / f'{stem}.webp', 'WEBP', lossless=True, method=6)
-            entry.update(image=f'assets/pages/{stem}.webp', width=image.width, height=image.height)
+        measurement = measurements.get(stem+'.png')
+        assert measurement and measurement.get('reviewed'), f'Review layout and number first: {stem}'
+        prepare_ink(source,out,stem,measurement,entry)
         pages.append(entry)
         available += 1
-    pages.append({'id': 'back', 'kind': 'back', 'text': 'Книга стихов моего деда\nВалентин Лаврищев'})
+    pages.append({'id': 'back', 'kind': 'back', 'text': ''})
     contents = []
     section = ''
     for p in pages:
@@ -73,7 +118,7 @@ def main():
                     section = value
     data = {'author': 'Валентин Лаврищев', 'title': 'Родник', 'available': available,
             'missing': [p['number'] for p in pages if p['kind'] == 'missing'],
-            'pages': pages, 'contents': contents}
+            'pages': pages, 'contents': contents, 'layout':prepare_text(pages,out)}
     (out / 'book.json').write_text(json.dumps(data, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
     Image.open(source / '000_Обложка.jpg').save(out / 'cover.webp', 'WEBP', quality=94, method=6)
     # Font and licence are kept locally so reading does not need a third-party connection.

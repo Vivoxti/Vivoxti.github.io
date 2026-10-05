@@ -16,53 +16,51 @@ const escapeHtml = (text) => String(text).replace(/[&<>"']/g, (c) => ({ '&': '&a
 const normalize = (text) => text.toLocaleLowerCase('ru').replace(/ё/g, 'е');
 const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const lastCursor = () => Math.floor((state.data.pages.length - 1) / step()) * step();
+const backIndex = () => state.data.pages.findIndex((page) => page.kind === 'back');
+const lastReadingCursor = () => Math.floor((backIndex() - 1) / step()) * step();
+const placement = ([x, y, width, height]) => `left:${x}%;top:${y}%;width:${width}%;height:${height}%`;
 
 function saveReading() {
   try { localStorage.setItem('rodnik-reading-v1', JSON.stringify({ id: state.data.pages[state.cursor]?.id, mode: state.mode })); } catch { /* Reading also works with storage disabled. */ }
 }
 
 function makePage(page, mode = state.mode) {
-  if (!page) return '<div class="blank-page" aria-label="Конец книги">✳</div>';
+  if (!page) return '<div class="blank-page" aria-label="Пустой лист"></div>';
   const grain = '<div class="paper-grain" aria-hidden="true"></div>';
   let content;
   if (page.kind === 'title') {
     content = '<div class="page-title-design"><p class="eyebrow">РУКОПИСНАЯ КНИГА СТИХОВ</p><h2>Родник</h2><h3>Валентин Лаврищев</h3><blockquote>Я мысли те лишь излагал,<br>Что из души фонтаном били.</blockquote></div>';
   } else if (page.kind === 'back') {
-    content = '<div class="page-title-design back-page-design"><div class="portrait-frame"><img class="back-portrait" src="assets/portrait.png?v=2" alt="Портрет Валентина Лаврищева" draggable="false"></div><h2 style="font-size:32px;letter-spacing:-1px">Валентин<br>Лаврищев</h2><blockquote>Его слова. Его почерк.<br>Наша память.</blockquote><small>СЕМЕЙНЫЙ АРХИВ</small></div>';
+    content = '';
   } else if (page.kind === 'missing') {
     content = `<div class="missing-page"><span class="missing-number">${page.number}</span><p>Эта страница<br>ещё не найдена.</p><small>Оставили для неё место в книге.</small></div>`;
   } else {
-    const inside = mode === 'original' && page.image
-      ? `<img class="ink-image" src="${page.image}" alt="${escapeHtml(page.text || 'Пустая страница')}" decoding="async" draggable="false">`
-      : `<pre class="page-text">${escapeHtml(page.text)}</pre>`;
-    content = `<div class="page-inner">${inside}</div>`;
+    content = mode === 'original' && page.image
+      ? `<img class="ink-image positioned-ink" style="${placement(page.layout)}" src="${page.image}" alt="${escapeHtml(page.text || 'Пустая страница')}" decoding="async" draggable="false">`
+      : `<div class="page-inner positioned-text" style="${placement(page.textLayout || [8, 8, 84, 84])}"><pre class="page-text">${escapeHtml(page.text)}</pre></div>`;
   }
-  if (page.number) content += `<span class="page-number">${page.number}</span>`;
+  if (page.number) content += mode === 'original' && page.numberImage
+    ? `<img class="page-number-image" src="${page.numberImage}" style="width:${page.numberLayout[0]}%;height:${page.numberLayout[1]}%" alt="${page.number}" draggable="false">`
+    : `<span class="page-number">${page.number}</span>`;
   return grain + content;
 }
 
 function fitPage(container) {
+  const width = container.clientWidth;
+  const layout = state.data?.layout || { columns: 28, textFontCells: .8, textLineCells: 1 };
+  const cell = width / layout.columns;
+  container.style.setProperty('--grid-size', `${cell}px`);
+  const number = container.querySelector('.page-number');
+  if (number) number.style.fontSize = `${cell * .85}px`;
   const text = container.querySelector('.page-text');
   if (!text) return;
   if (container.classList.contains('flow-text')) {
     text.style.fontSize = `${22 * state.zoom}px`;
     return;
   }
-  const inner = text.parentElement;
-  text.style.fontSize = '24px';
-  // Preserve every original line. Fit the actual glyph widths and all stanzas to the sheet.
-  const width = Math.max(1, text.scrollWidth);
-  const height = Math.max(1, text.scrollHeight);
-  const scale = Math.min(inner.clientWidth / width, inner.clientHeight / height, container.id === 'zoom-paper' ? 1.5 : 1);
-  let fontSize = Math.max(6, 24 * scale * .985);
-  text.style.fontSize = `${fontSize}px`;
-  // Letter spacing stays constant as the font shrinks, so measure again rather than clipping long lines.
-  for (let i = 0; i < 5; i++) {
-    const correction = Math.min(inner.clientWidth / Math.max(1, text.scrollWidth), inner.clientHeight / Math.max(1, text.scrollHeight));
-    if (correction >= 1) break;
-    fontSize = Math.max(6, fontSize * correction * .99);
-    text.style.fontSize = `${fontSize}px`;
-  }
+  // One physical font and one notebook-line pitch for every transcript.
+  text.style.fontSize = `${cell * layout.textFontCells}px`;
+  text.style.lineHeight = `${cell * layout.textLineCells}px`;
 }
 
 function renderPage(container, page, index) {
@@ -74,7 +72,11 @@ function renderPage(container, page, index) {
     const pre = document.createElement('pre');
     pre.className = 'page-text';
     pre.textContent = page.text;
-    image.replaceWith(pre);
+    const inner = document.createElement('div');
+    inner.className = 'page-inner positioned-text';
+    inner.style.cssText = placement(page.textLayout || [8,8,84,84]);
+    inner.append(pre);
+    image.replaceWith(inner);
     fitPage(container);
   }, { once: true });
   fitPage(container);
@@ -82,7 +84,7 @@ function renderPage(container, page, index) {
 
 function labelFor(page) {
   if (!page) return '';
-  return page.number ? String(page.number) : ({ title: 'Начало', contents: 'Содержание', back: 'Конец' }[page.kind] || '');
+  return page.number ? String(page.number) : ({ title: 'Начало', contents: 'Содержание', back: 'Задняя обложка' }[page.kind] || '');
 }
 
 function updateNavigation() {
@@ -106,6 +108,7 @@ function updateNavigation() {
 
 function renderSpread() {
   if (!state.data) return;
+  state.cursor = Math.min(state.cursor, lastReadingCursor());
   const pages = state.data.pages;
   ui.left.setAttribute('aria-hidden', String(!state.opened || mobile.matches));
   ui.right.setAttribute('aria-hidden', String(!state.opened));
@@ -261,6 +264,7 @@ async function closeBook() {
   $('#front-cover').setAttribute('aria-hidden', 'false');
   $('#front-cover').tabIndex = 0;
   ui.experience.classList.remove('open');
+  ui.book.classList.remove('show-back');
   ui.toolbar.hidden = true;
   ui.navigation.hidden = true;
   renderSpread();
@@ -270,10 +274,26 @@ async function closeBook() {
   alignCoverButton();
 }
 
+async function showBackCover() {
+  if (state.busy) return;
+  state.cursor = lastReadingCursor();
+  await closeBook();
+  state.busy = true;
+  ui.book.classList.add('show-back');
+  $('#rotate-cover').innerHTML = 'Лицевая обложка <span>↻</span>';
+  history.replaceState(null, '', `${location.pathname}${location.search}#page=back`);
+  alignCoverButton({ afterTurn: true });
+  await pause(reducedMotion.matches ? 1 : 1320);
+  state.busy = false;
+  updateNavigation();
+  ui.announcement.textContent = 'Задняя обложка книги.';
+}
+
 async function turnPage(direction) {
   if (!state.opened || state.busy) return;
   const target = Math.max(0, Math.min(lastCursor(), state.cursor + direction * step()));
   if (target === state.cursor) return;
+  if (target >= backIndex()) return showBackCover();
   state.busy = true;
   nudgeRibbon(direction * 7);
   updateNavigation();
@@ -328,6 +348,7 @@ async function goToId(id) {
   const index = state.data.pages.findIndex((p) => p.id === id);
   if (index < 0) return;
   if (state.busy) { await pause(100); return goToId(id); }
+  if (id === 'back') return showBackCover();
   state.cursor = Math.floor(index / step()) * step();
   await openBook();
   renderSpread();
@@ -467,7 +488,11 @@ function bindEvents() {
   $('#zoom-minus').addEventListener('click', () => { state.zoom = Math.max(.7, state.zoom - .2); renderZoom(); });
   $('#zoom-plus').addEventListener('click', () => { state.zoom = Math.min(2, state.zoom + .2); renderZoom(); });
   for (const direction of [-1, 1]) {
-    $(`#zoom-${direction < 0 ? 'prev' : 'next'}`).addEventListener('click', () => {
+    $(`#zoom-${direction < 0 ? 'prev' : 'next'}`).addEventListener('click', async () => {
+      if (state.zoomIndex + direction >= backIndex()) {
+        await closeDialog($('#zoom-dialog'));
+        return showBackCover();
+      }
       state.zoomIndex += direction;
       state.cursor = Math.floor(state.zoomIndex / step()) * step();
       renderSpread();
@@ -507,6 +532,7 @@ function bindEvents() {
   });
   ui.range.addEventListener('input', () => {
     if (state.busy) return;
+    if (Number(ui.range.value) * step() >= backIndex()) return showBackCover();
     state.cursor = Number(ui.range.value) * step();
     renderSpread();
     updateHash();
@@ -519,15 +545,9 @@ function bindEvents() {
     } else if (event.key === 'Escape' && state.opened) closeBook();
   });
   let pointer = null;
-  let dragged = false;
   ui.stage.addEventListener('pointerdown', (event) => {
     if (!state.opened || state.busy || event.button !== 0 || event.target.closest('button')) return;
     pointer = { x: event.clientX, y: event.clientY, id: event.pointerId };
-    dragged = false;
-  });
-  ui.stage.addEventListener('pointermove', (event) => {
-    if (!pointer || event.pointerId !== pointer.id) return;
-    if (Math.abs(event.clientX - pointer.x) > 15) dragged = true;
   });
   ui.stage.addEventListener('pointerup', (event) => {
     if (!pointer || pointer.id !== event.pointerId) return;
@@ -535,15 +555,10 @@ function bindEvents() {
     const dy = event.clientY - pointer.y;
     pointer = null;
     if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.25) {
-      dragged = true;
       turnPage(dx < 0 ? 1 : -1);
     }
   });
-  ui.stage.addEventListener('pointercancel', () => { pointer = null; dragged = true; });
-  [ui.left, ui.right].forEach((page) => page.addEventListener('click', () => {
-    if (!dragged) openZoom(Number(page.dataset.index));
-    dragged = false;
-  }));
+  ui.stage.addEventListener('pointercancel', () => { pointer = null; });
   let resizeTimer;
   const resize = () => {
     clearTimeout(resizeTimer);
@@ -576,7 +591,7 @@ async function init() {
   $('#open-button').disabled = true;
   $('#front-cover').disabled = true;
   try {
-    const response = await fetch('assets/book.json');
+    const response = await fetch('assets/book.json?v=2');
     if (!response.ok) throw new Error(`Archive response: ${response.status}`);
     state.data = await response.json();
     try {

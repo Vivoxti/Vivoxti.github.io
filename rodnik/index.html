@@ -12,8 +12,8 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/Neucha.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="preload" href="assets/fonts/RussoOne-Regular.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="stylesheet" href="style.css?v=12">
-  <script src="app.js?v=10" defer></script>
+  <link rel="stylesheet" href="style.css?v=13">
+  <script src="app.js?v=11" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -55,7 +55,7 @@
     <section class="reader-navigation" id="reader-navigation" aria-label="Перелистывание страниц" hidden>
       <div class="navigation-row"><button class="round-button" id="prev-page" aria-label="Предыдущие страницы">←</button><button class="page-indicator" id="page-indicator" title="Перейти к странице">Начало</button><button class="round-button" id="next-page" aria-label="Следующие страницы">→</button></div>
       <input id="page-range" type="range" min="0" max="1" value="0" aria-label="Положение в книге">
-      <p class="reading-hint">ЛИСТАЙТЕ СТРЕЛКАМИ <span>·</span> ПОТЯНИТЕ СТРАНИЦУ <span>·</span> НАЖМИТЕ НА ТЕКСТ ДЛЯ УВЕЛИЧЕНИЯ</p>
+      <p class="reading-hint">ЛИСТАЙТЕ СТРЕЛКАМИ <span>·</span> ПОТЯНИТЕ СТРАНИЦУ <span>·</span> УВЕЛИЧЕНИЕ — КНОПКОЙ ЛУПЫ</p>
     </section>
   </main>
   <dialog id="contents-dialog" class="drawer"><div class="dialog-header"><div><p class="eyebrow">ПО СТРАНИЦАМ ПАМЯТИ</p><h2>Содержание<span>.</span></h2></div><button class="round-button" data-close aria-label="Закрыть содержание">×</button></div><label class="search-field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg><input id="search-input" type="search" placeholder="Название, строка или номер страницы" aria-label="Поиск по книге"></label><div class="contents-list" id="contents-list"></div><p class="drawer-note">Нумерация сохранена по рукописи.</p></dialog>
