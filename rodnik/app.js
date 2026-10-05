@@ -20,6 +20,30 @@ const backIndex = () => state.data.pages.findIndex((page) => page.kind === 'back
 const lastReadingCursor = () => Math.floor((backIndex() - 1) / step()) * step();
 const placement = ([x, y, width, height]) => `left:${x}%;top:${y}%;width:${width}%;height:${height}%`;
 
+function makeContents(text) {
+  let pending = '';
+  const rows = text.split('\n').map((line) => {
+    line = line.trim();
+    if (!line) return '';
+    const entry = line.match(/^(.*?)\.{2,}\s*(\d+)\s*$/);
+    if (entry) {
+      const title = `${pending}${entry[1]}`.trim();
+      pending = '';
+      return `<a class="book-toc-row" href="#page=${entry[2].padStart(3, '0')}"><span class="toc-label">${escapeHtml(title)}</span><span class="toc-leader" aria-hidden="true"></span><span class="toc-number">${entry[2]}</span></a>`;
+    }
+    if (pending || (line.startsWith('«') && !line.includes('»'))) { pending += `${line} `; return ''; }
+    return `<h4 class="book-toc-heading">${escapeHtml(line)}</h4>`;
+  });
+  if (pending) rows.push(`<p>${escapeHtml(pending.trim())}</p>`);
+  return `<div class="book-contents">${rows.join('')}</div>`;
+}
+
+function makeTranscript(page) {
+  const [x, y, width, height] = page.layout || page.textLayout || [8, 8, 84, 84];
+  const content = page.kind === 'contents' ? makeContents(page.text) : `<pre class="page-text">${escapeHtml(page.text)}</pre>`;
+  return `<div class="page-inner transcript-scroll" tabindex="0" aria-label="${page.kind === 'contents' ? 'Содержание' : 'Текст стихотворения'}" data-center-x="${x + width / 2}" data-center-y="${y + height / 2}">${content}</div>`;
+}
+
 function saveReading() {
   try { localStorage.setItem('rodnik-reading-v1', JSON.stringify({ id: state.data.pages[state.cursor]?.id, mode: state.mode })); } catch { /* Reading also works with storage disabled. */ }
 }
@@ -37,7 +61,7 @@ function makePage(page, mode = state.mode) {
   } else {
     content = mode === 'original' && page.image
       ? `<img class="ink-image positioned-ink" style="${placement(page.layout)}" src="${page.image}" alt="${escapeHtml(page.text || 'Пустая страница')}" decoding="async" draggable="false">`
-      : `<div class="page-inner positioned-text" style="${placement(page.textLayout || [8, 8, 84, 84])}"><pre class="page-text">${escapeHtml(page.text)}</pre></div>`;
+      : makeTranscript(page);
   }
   if (page.number) content += mode === 'original' && page.numberImage
     ? `<img class="page-number-image" src="${page.numberImage}" style="width:${page.numberLayout[0]}%;height:${page.numberLayout[1]}%" alt="${page.number}" draggable="false">`
@@ -52,15 +76,23 @@ function fitPage(container) {
   container.style.setProperty('--grid-size', `${cell}px`);
   const number = container.querySelector('.page-number');
   if (number) number.style.fontSize = `${cell * .85}px`;
-  const text = container.querySelector('.page-text');
+  const text = container.querySelector('.page-text, .book-contents');
   if (!text) return;
   if (container.classList.contains('flow-text')) {
-    text.style.fontSize = `${22 * state.zoom}px`;
+    text.style.fontSize = `${28 * state.zoom}px`;
     return;
   }
-  // One physical font and one notebook-line pitch for every transcript.
-  text.style.fontSize = `${cell * layout.textFontCells}px`;
-  text.style.lineHeight = `${cell * layout.textLineCells}px`;
+  // Keep a generous uniform font; longer poems scroll rather than shrink.
+  const fontSize = Math.max(18, cell * 1.5);
+  text.style.fontSize = `${fontSize}px`;
+  text.style.lineHeight = '1.4';
+  if (text.classList.contains('book-contents')) return;
+  const inner = text.parentElement;
+  text.style.margin = '0';
+  const desiredX = width * Number(inner.dataset.centerX) / 100 - inner.offsetLeft - text.offsetWidth / 2;
+  const desiredY = container.clientHeight * Number(inner.dataset.centerY) / 100 - inner.offsetTop - text.offsetHeight / 2;
+  text.style.marginLeft = `${Math.max(0, Math.min(inner.clientWidth - text.offsetWidth, desiredX))}px`;
+  text.style.marginTop = `${Math.max(0, Math.min(inner.clientHeight - text.offsetHeight, desiredY))}px`;
 }
 
 function renderPage(container, page, index) {
@@ -69,13 +101,9 @@ function renderPage(container, page, index) {
   container.setAttribute('aria-label', page?.number ? `Страница ${page.number}` : page?.kind === 'contents' ? 'Рукописное содержание' : page?.kind === 'back' ? 'Задняя обложка' : 'Титульная страница');
   const image = container.querySelector('.ink-image');
   image?.addEventListener('error', () => {
-    const pre = document.createElement('pre');
-    pre.className = 'page-text';
-    pre.textContent = page.text;
-    const inner = document.createElement('div');
-    inner.className = 'page-inner positioned-text';
-    inner.style.cssText = placement(page.textLayout || [8,8,84,84]);
-    inner.append(pre);
+    const template = document.createElement('template');
+    template.innerHTML = makeTranscript(page);
+    const inner = template.content.firstElementChild;
     image.replaceWith(inner);
     fitPage(container);
   }, { once: true });
@@ -91,7 +119,7 @@ function updateNavigation() {
   const pages = state.data.pages;
   const visible = pages.slice(state.cursor, state.cursor + step());
   const labels = visible.map(labelFor);
-  ui.indicator.textContent = labels.join(' — ');
+  ui.indicator.textContent = labels.join(' · ');
   ui.range.max = lastCursor() / step();
   ui.range.value = state.cursor / step();
   ui.prev.disabled = state.busy || state.cursor <= 0;
@@ -236,6 +264,7 @@ function updateRibbonMotion() {
 
 async function openBook() {
   if (!state.data || state.opened || state.busy) return;
+  state.busy = true;
   if (ui.book.classList.contains('show-back')) {
     ui.book.classList.remove('show-back');
     await pause(reducedMotion.matches ? 1 : 650);
@@ -467,12 +496,44 @@ function bindEvents() {
   $('#open-button').addEventListener('click', openBook);
   $('#front-cover').addEventListener('click', openBook);
   $('#rotate-cover').addEventListener('click', () => {
+    if (state.busy) return;
     ui.book.classList.toggle('show-back');
     nudgeRibbon(ui.book.classList.contains('show-back') ? 24 : -24);
     $('#rotate-cover').innerHTML = ui.book.classList.contains('show-back') ? 'Лицевая обложка <span>↻</span>' : 'Оборот обложки <span>↻</span>';
     alignCoverButton({ afterTurn: true });
   });
   $('#close-book').addEventListener('click', closeBook);
+  let wheelTotal = 0;
+  let lastWheelAt = 0;
+  let wheelLocked = false;
+  ui.experience.addEventListener('wheel', (event) => {
+    if (!state.data || event.ctrlKey || document.querySelector('dialog[open]') || Math.abs(event.deltaX) > Math.abs(event.deltaY) || !event.deltaY) return;
+    const now = performance.now();
+    if (now - lastWheelAt > 220) { wheelTotal = 0; wheelLocked = false; }
+    lastWheelAt = now;
+    const transcript = event.target.closest('.transcript-scroll');
+    if (state.opened && transcript && transcript.scrollHeight > transcript.clientHeight + 1) {
+      const canScroll = event.deltaY > 0
+        ? transcript.scrollTop + transcript.clientHeight < transcript.scrollHeight - 1
+        : transcript.scrollTop > 1;
+      if (canScroll) { wheelLocked = true; return; }
+    }
+    event.preventDefault();
+    if (state.busy || wheelLocked) return;
+    wheelTotal += event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? ui.stage.clientHeight : 1);
+    if (Math.abs(wheelTotal) < 45) return;
+    wheelLocked = true;
+    const direction = Math.sign(wheelTotal);
+    wheelTotal = 0;
+    if (!state.opened) {
+      state.cursor = ui.book.classList.contains('show-back') ? lastReadingCursor() : 0;
+      openBook().then(() => { if (state.opened) updateHash(); });
+    } else if (direction < 0 && state.cursor === 0) {
+      closeBook();
+    } else {
+      turnPage(direction);
+    }
+  }, { passive: false });
   ui.prev.addEventListener('click', () => turnPage(-1));
   ui.next.addEventListener('click', () => turnPage(1));
   $('#mode-original').addEventListener('click', () => setMode('original'));

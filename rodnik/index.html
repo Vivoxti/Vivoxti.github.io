@@ -12,13 +12,13 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/Neucha.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="preload" href="assets/fonts/RussoOne-Regular.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="stylesheet" href="style.css?v=13">
-  <script src="app.js?v=11" defer></script>
+  <link rel="stylesheet" href="style.css?v=14">
+  <script src="app.js?v=12" defer></script>
 </head>
 <body>
   <header class="site-header">
     <a class="brand" href="./" aria-label="Сборник стихов, на главную">СБОРНИК СТИХОВ</a>
-    <nav aria-label="Основная навигация"><button class="text-button" id="about-button">О книге <span>↗</span></button><button class="text-button" id="contents-button">Содержание <span>☰</span></button></nav>
+    <nav aria-label="Основная навигация"><button class="text-button" id="about-button">О книге <span aria-hidden="true">📖</span></button><button class="text-button" id="contents-button">Содержание <span>☰</span></button></nav>
   </header>
   <main>
     <section class="experience" id="experience" aria-label="Интерактивная книга">
@@ -47,15 +47,15 @@
         </div>
       </div>
       <div class="reader-toolbar" id="reader-toolbar" hidden>
-        <button class="text-button reader-close" id="close-book" aria-label="Закрыть книгу" title="Закрыть книгу">Закрыть</button>
+        <button class="reader-close" id="close-book" aria-label="Закрыть книгу" title="Закрыть книгу">Закрыть</button>
         <div class="mode-switch" role="group" aria-label="Вид страниц"><button id="mode-original" class="active" aria-pressed="true">Почерк</button><button id="mode-text" aria-pressed="false">Текст</button></div>
         <button class="round-button" id="zoom-button" aria-label="Увеличить страницу" title="Читать крупнее"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5M7 10h6M10 7v6"/></svg></button>
       </div>
     </section>
     <section class="reader-navigation" id="reader-navigation" aria-label="Перелистывание страниц" hidden>
-      <div class="navigation-row"><button class="round-button" id="prev-page" aria-label="Предыдущие страницы">←</button><button class="page-indicator" id="page-indicator" title="Перейти к странице">Начало</button><button class="round-button" id="next-page" aria-label="Следующие страницы">→</button></div>
+      <div class="navigation-row"><button class="round-button" id="prev-page" aria-label="Предыдущие страницы"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M20 12H4m6-6-6 6 6 6"/></svg></button><button class="page-indicator" id="page-indicator" title="Перейти к странице">Начало</button><button class="round-button" id="next-page" aria-label="Следующие страницы"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></button></div>
       <input id="page-range" type="range" min="0" max="1" value="0" aria-label="Положение в книге">
-      <p class="reading-hint">ЛИСТАЙТЕ СТРЕЛКАМИ <span>·</span> ПОТЯНИТЕ СТРАНИЦУ <span>·</span> УВЕЛИЧЕНИЕ — КНОПКОЙ ЛУПЫ</p>
+      <p class="reading-hint">ЛИСТАЙТЕ СТРЕЛКАМИ И КОЛЁСИКОМ <span>·</span> ПОТЯНИТЕ СТРАНИЦУ <span>·</span> УВЕЛИЧЕНИЕ — КНОПКОЙ ЛУПЫ</p>
     </section>
   </main>
   <dialog id="contents-dialog" class="drawer"><div class="dialog-header"><div><p class="eyebrow">ПО СТРАНИЦАМ ПАМЯТИ</p><h2>Содержание<span>.</span></h2></div><button class="round-button" data-close aria-label="Закрыть содержание">×</button></div><label class="search-field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg><input id="search-input" type="search" placeholder="Название, строка или номер страницы" aria-label="Поиск по книге"></label><div class="contents-list" id="contents-list"></div><p class="drawer-note">Нумерация сохранена по рукописи.</p></dialog>
