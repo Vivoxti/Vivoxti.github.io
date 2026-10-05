@@ -346,9 +346,31 @@ function setMode(mode) {
   if ($('#zoom-dialog').open) renderZoom();
 }
 
+const closingDialogs = new WeakMap();
 function showDialog(dialog) {
+  if (closingDialogs.has(dialog)) return;
   if (!dialog.open) dialog.showModal();
   document.body.style.overflow = 'hidden';
+}
+
+function closeDialog(dialog) {
+  if (closingDialogs.has(dialog)) return closingDialogs.get(dialog);
+  if (!dialog.open) return Promise.resolve();
+  if (reducedMotion.matches || !dialog.matches('#about-dialog, #contents-dialog')) {
+    dialog.close();
+    return Promise.resolve();
+  }
+  dialog.classList.add('is-closing');
+  const finished = new Promise((resolve) => {
+    setTimeout(() => {
+      dialog.close();
+      dialog.classList.remove('is-closing');
+      closingDialogs.delete(dialog);
+      resolve();
+    }, 280);
+  });
+  closingDialogs.set(dialog, finished);
+  return finished;
 }
 
 function populateContents(query = '') {
@@ -383,8 +405,8 @@ function populateContents(query = '') {
     const button = document.createElement('button');
     button.className = 'contents-link';
     button.innerHTML = `<span>${escapeHtml(row.title)}</span><span class="toc-number">${row.number}</span>`;
-    button.addEventListener('click', () => {
-      $('#contents-dialog').close();
+    button.addEventListener('click', async () => {
+      await closeDialog($('#contents-dialog'));
       goToId(String(row.number).padStart(3, '0'));
     });
     list.append(button);
@@ -455,14 +477,19 @@ function bindEvents() {
     });
   }
   document.querySelectorAll('dialog').forEach((dialog) => {
-    dialog.querySelectorAll('[data-close]').forEach((button) => button.addEventListener('click', () => dialog.close()));
+    dialog.querySelectorAll('[data-close]').forEach((button) => button.addEventListener('click', () => closeDialog(dialog)));
+    dialog.addEventListener('cancel', (event) => {
+      if (!dialog.matches('#about-dialog, #contents-dialog')) return;
+      event.preventDefault();
+      closeDialog(dialog);
+    });
     dialog.addEventListener('close', () => {
       if (!document.querySelector('dialog[open]')) document.body.style.overflow = '';
     });
     dialog.addEventListener('click', (event) => {
       if (event.target !== dialog) return;
       const rect = dialog.getBoundingClientRect();
-      if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) dialog.close();
+      if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) closeDialog(dialog);
     });
   });
   ui.indicator.addEventListener('click', () => {
