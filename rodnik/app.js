@@ -583,7 +583,7 @@ async function showBackCover() {
 
 const readingPosition = () => state.opened ? state.cursor : backShowing() ? lastCursor() : -step();
 
-// Restartable click feedback: a ring spreads from the button and its arrow nudges the way the page turns.
+// Restartable click feedback: the arrow nudges the way the page turns.
 function pulseButton(button) {
   if (button.disabled || reducedMotion.matches) return;
   button.classList.remove('pulse');
@@ -1000,7 +1000,7 @@ function bindEvents() {
     turnPage(direction);
   }, { passive: false });
   [ui.prev, ui.next].forEach((button) => button.addEventListener('animationend', (event) => {
-    if (event.animationName === 'button-ring') button.classList.remove('pulse');
+    if (event.animationName === 'arrow-nudge-next' || event.animationName === 'arrow-nudge-prev') button.classList.remove('pulse');
   }));
   ui.prev.addEventListener('click', () => { pulseButton(ui.prev); turnPage(-1); });
   ui.next.addEventListener('click', () => { pulseButton(ui.next); turnPage(1); });
