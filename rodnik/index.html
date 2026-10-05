@@ -12,13 +12,13 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/Neucha.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="preload" href="assets/fonts/RussoOne-Regular.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="stylesheet" href="style.css?v=27">
+  <link rel="stylesheet" href="style.css?v=28">
   <script src="app.js?v=28" defer></script>
 </head>
 <body>
   <header class="site-header">
     <a class="brand" href="./" aria-label="Сборник стихов, на главную">СБОРНИК СТИХОВ</a>
-    <nav aria-label="Основная навигация"><button class="text-button" id="about-button">О книге <span aria-hidden="true">🕮</span></button><button class="text-button" id="contents-button">Содержание <span>☰</span></button></nav>
+    <nav aria-label="Основная навигация"><button class="text-button" id="about-button">О книге <span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M12 6.5C9.5 4.5 6.5 4 3 4.5v14c3.5-.5 6.5 0 9 2 2.5-2 5.5-2.5 9-2v-14c-3.5-.5-6.5 0-9 2Zm0 0v14"/></svg></span></button><button class="text-button" id="contents-button">Содержание <span>☰</span></button></nav>
   </header>
   <main>
     <section class="experience" id="experience" aria-label="Интерактивная книга">
@@ -63,7 +63,7 @@
       </div>
     </section>
     <section class="reader-navigation" id="reader-navigation" aria-label="Перелистывание страниц" hidden>
-      <div class="navigation-row"><button class="round-button" id="prev-page" aria-label="Предыдущие страницы"><span class="page-arrow" aria-hidden="true">⮨</span></button><button class="page-indicator" id="page-indicator" title="Перейти к странице">Начало</button><button class="round-button" id="next-page" aria-label="Следующие страницы"><span class="page-arrow" aria-hidden="true">⮩</span></button></div>
+      <div class="navigation-row"><button class="round-button" id="prev-page" aria-label="Предыдущие страницы"><svg class="page-arrow" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M21 5v3a8 8 0 0 1-8 8H9v4l-7-6 7-6v4h4a4 4 0 0 0 4-4V5Z"/></svg></button><button class="page-indicator" id="page-indicator" title="Перейти к странице">Начало</button><button class="round-button" id="next-page" aria-label="Следующие страницы"><svg class="page-arrow" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path transform="translate(24 0) scale(-1 1)" d="M21 5v3a8 8 0 0 1-8 8H9v4l-7-6 7-6v4h4a4 4 0 0 0 4-4V5Z"/></svg></button></div>
       <input id="page-range" type="range" min="0" max="1" value="0" aria-label="Положение в книге">
       <p class="reading-hint">ЛИСТАЙТЕ СТРЕЛКАМИ И КОЛЁСИКОМ <span>·</span> ПОТЯНИТЕ СТРАНИЦУ <span>·</span> УВЕЛИЧЕНИЕ — КНОПКОЙ ЛУПЫ</p>
     </section>
