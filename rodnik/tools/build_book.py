@@ -3,11 +3,26 @@ from pathlib import Path
 import argparse
 import json
 import re
+import shutil
 import urllib.request
 from PIL import Image, ImageFont
 
 SITE = Path(__file__).resolve().parents[1]
 COLS, ROWS = 28, 42
+
+
+def sync_audio(source, out, pages):
+    """Publish only recordings with a matching numbered manuscript page."""
+    audio_dir = source / 'audio'
+    for page in pages:
+        page.pop('audio', None)
+        if page.get('kind') != 'page' or not page.get('number'):
+            continue
+        recording = audio_dir / f"{page['number']}.mp3"
+        if recording.is_file():
+            (out / 'audio').mkdir(parents=True, exist_ok=True)
+            shutil.copy2(recording, out / 'audio' / recording.name)
+            page['audio'] = f'assets/audio/{recording.name}'
 
 
 def rect_percent(box, size, grid):
@@ -98,6 +113,7 @@ def main():
         pages.append(entry)
         available += 1
     pages.append({'id': 'back', 'kind': 'back', 'text': ''})
+    sync_audio(source, out, pages)
     contents = []
     section = ''
     for p in pages:

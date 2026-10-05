@@ -12,8 +12,8 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/Neucha.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="preload" href="assets/fonts/RussoOne-Regular.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="stylesheet" href="style.css?v=26">
-  <script src="app.js?v=27" defer></script>
+  <link rel="stylesheet" href="style.css?v=27">
+  <script src="app.js?v=28" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -55,7 +55,11 @@
       <div class="reader-toolbar" id="reader-toolbar" hidden>
         <button class="reader-close" id="close-book" aria-label="Закрыть книгу" title="Закрыть книгу">Закрыть</button>
         <div class="mode-switch" role="group" aria-label="Вид страниц"><button id="mode-original" class="active" aria-pressed="true">Почерк</button><button id="mode-text" aria-pressed="false">Текст</button></div>
-        <button class="round-button" id="zoom-button" aria-label="Увеличить страницу" title="Читать крупнее"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5M7 10h6M10 7v6"/></svg></button>
+        <div class="reader-actions">
+          <button class="round-button" id="zoom-button" aria-label="Увеличить страницу" title="Читать крупнее"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5M7 10h6M10 7v6"/></svg></button>
+          <button class="round-button" id="audio-button" aria-label="Выбрать страницу для озвучки" title="Слушать стих" aria-pressed="false" disabled><svg class="audio-listen-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 13v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="11" width="4" height="8" rx="2"/><rect x="17" y="11" width="4" height="8" rx="2"/></svg><svg class="audio-stop-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" hidden><rect x="6" y="6" width="12" height="12" rx="2"/></svg></button>
+        </div>
+        <p class="audio-hint" id="audio-hint" role="status" hidden>Выберите страницу</p>
       </div>
     </section>
     <section class="reader-navigation" id="reader-navigation" aria-label="Перелистывание страниц" hidden>

@@ -12,6 +12,7 @@ const mobile = matchMedia('(max-width: 700px)');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const state = { data: null, cursor: 0, mode: 'original', opened: false, busy: false, zoomIndex: 0, zoom: 1, turn: null };
 const paging = { target: null, running: false, active: null, preparing: null, speed: 1 };
+const narration = { audio: null, index: null, selecting: false, message: '', messageTimer: null };
 let jumpSequence = 0;
 const step = () => mobile.matches ? 1 : 2;
 const escapeHtml = (text) => String(text).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -350,6 +351,85 @@ function labelFor(page) {
   return page.number ? String(page.number) : ({ title: 'Начало', contents: 'Содержание', back: 'Задняя обложка' }[page.kind] || '');
 }
 
+function stopNarration() {
+  if (narration.audio) {
+    narration.audio.pause();
+    narration.audio.removeAttribute('src');
+    narration.audio.load();
+  }
+  narration.audio = null;
+  narration.index = null;
+  narration.selecting = false;
+  updateAudioControl();
+}
+
+function updateAudioControl() {
+  if (!state.data) return;
+  const visible = state.data.pages.slice(state.cursor, state.cursor + step());
+  if (narration.audio && (!state.opened || narration.index < state.cursor || narration.index >= state.cursor + step())) {
+    stopNarration();
+    return;
+  }
+  const available = state.opened && visible.some(page => page.audio);
+  if (!available || state.busy || paging.running) narration.selecting = false;
+  const playing = Boolean(narration.audio);
+  const button = $('#audio-button');
+  button.disabled = !playing && (!available || state.busy || paging.running);
+  button.classList.toggle('active', playing || narration.selecting);
+  button.setAttribute('aria-pressed', String(playing || narration.selecting));
+  const label = playing ? 'Остановить озвучку' : narration.selecting ? 'Отменить выбор страницы' : available ? 'Выбрать страницу для озвучки' : 'Для этих страниц пока нет озвучки';
+  button.setAttribute('aria-label', label);
+  button.title = label;
+  button.querySelector('.audio-listen-icon').toggleAttribute('hidden', playing);
+  button.querySelector('.audio-stop-icon').toggleAttribute('hidden', !playing);
+  const hint = $('#audio-hint');
+  hint.hidden = !narration.selecting && !narration.message;
+  hint.textContent = narration.message || 'Выберите страницу';
+  for (const surface of [ui.left, ui.right]) {
+    surface.querySelector('.audio-page-choice')?.remove();
+    surface.classList.remove('audio-selectable', 'audio-playing');
+    if (!state.opened || (mobile.matches && surface === ui.left)) continue;
+    const index = Number(surface.dataset.index);
+    const page = state.data.pages[index];
+    if (playing && index === narration.index) surface.classList.add('audio-playing');
+    if (!narration.selecting || !page?.number) continue;
+    const choice = document.createElement('button');
+    choice.className = 'audio-page-choice';
+    choice.disabled = !page.audio;
+    choice.setAttribute('aria-label', page.audio ? `Слушать страницу ${page.number}` : `Страница ${page.number}: озвучки пока нет`);
+    choice.innerHTML = `<span class="audio-page-label">${page.audio ? '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M5 3.5a.6.6 0 0 1 .9-.52l7 4a.6.6 0 0 1 0 1.04l-7 4a.6.6 0 0 1-.9-.52z"/></svg>' : ''}<span>${page.audio ? `Страница ${page.number}` : 'Нет озвучки'}</span></span>`;
+    choice.addEventListener('click', () => playNarration(index));
+    surface.classList.toggle('audio-selectable', Boolean(page.audio));
+    surface.append(choice);
+  }
+}
+
+function playNarration(index) {
+  const page = state.data.pages[index];
+  if (!page?.audio || state.busy || !state.opened) return;
+  stopNarration();
+  clearTimeout(narration.messageTimer);
+  narration.message = '';
+  const audio = new Audio(page.audio);
+  audio.preload = 'none';
+  narration.audio = audio;
+  narration.index = index;
+  const failed = () => {
+    if (narration.audio !== audio) return;
+    stopNarration();
+    narration.message = 'Не удалось включить запись. Попробуйте ещё раз.';
+    updateAudioControl();
+    narration.messageTimer = setTimeout(() => { narration.message = ''; updateAudioControl(); }, 5000);
+  };
+  audio.addEventListener('ended', () => { if (narration.audio === audio) stopNarration(); }, { once: true });
+  audio.addEventListener('error', failed, { once: true });
+  // Call play in the page-selection gesture so mobile browsers permit playback.
+  audio.play().catch(failed);
+  updateAudioControl();
+  $('#audio-button').focus({ preventScroll: true });
+  ui.announcement.textContent = `Озвучка страницы ${page.number}.`;
+}
+
 function updateNavigation() {
   const pages = state.data.pages;
   const visible = pages.slice(state.cursor, state.cursor + step());
@@ -366,6 +446,7 @@ function updateNavigation() {
   $('#zoom-button').disabled = state.busy;
   $('#mode-original').disabled = state.busy;
   $('#mode-text').disabled = state.busy;
+  updateAudioControl();
   ui.announcement.textContent = `Открыто: ${visible.map((p) => p.number ? `страница ${p.number}` : labelFor(p)).join(', ')}. ${state.mode === 'original' ? 'Оригинальный почерк' : 'Расшифрованный текст'}.`;
   warmPageWindow();
 }
@@ -708,6 +789,7 @@ async function openBook({ keepCursor = false } = {}) {
 
 async function closeBook({ toBack = false } = {}) {
   if (state.busy) return;
+  stopNarration();
   const wasOpened = state.opened;
   const turning = wasOpened || toBack !== backShowing();
   state.busy = true;
@@ -1238,6 +1320,13 @@ function bindEvents() {
   $('#about-button').addEventListener('click', () => showDialog($('#about-dialog')));
   $('#search-input').addEventListener('input', (event) => populateContents(event.target.value));
   $('#zoom-button').addEventListener('click', () => openZoom());
+  $('#audio-button').addEventListener('click', () => {
+    if (narration.audio) return stopNarration();
+    clearTimeout(narration.messageTimer);
+    narration.message = '';
+    narration.selecting = !narration.selecting;
+    updateAudioControl();
+  });
   $('#zoom-minus').addEventListener('click', () => { state.zoom = Math.max(.7, state.zoom - .2); renderZoom(); });
   $('#zoom-plus').addEventListener('click', () => { state.zoom = Math.min(2, state.zoom + .2); renderZoom(); });
   for (const direction of [-1, 1]) {
@@ -1289,6 +1378,12 @@ function bindEvents() {
   });
   document.addEventListener('keydown', (event) => {
     if (['INPUT', 'TEXTAREA'].includes(event.target.tagName) || document.querySelector('dialog[open]')) return;
+    if (event.key === 'Escape' && narration.selecting) {
+      narration.selecting = false;
+      updateAudioControl();
+      $('#audio-button').focus({ preventScroll: true });
+      return;
+    }
     if ((state.opened || paging.running) && ['ArrowRight', 'ArrowLeft'].includes(event.key)) {
       event.preventDefault();
       const direction = event.key === 'ArrowRight' ? 1 : -1;
@@ -1362,7 +1457,7 @@ async function init() {
   $('#open-button').disabled = true;
   $('#front-cover').disabled = true;
   try {
-    const response = await fetch('assets/book.json?v=3');
+    const response = await fetch('assets/book.json?v=4');
     if (!response.ok) throw new Error(`Archive response: ${response.status}`);
     state.data = await response.json();
     try {
