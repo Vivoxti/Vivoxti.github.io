@@ -2157,6 +2157,32 @@
     ],
     "reviewed": true
   },
+  "086.png": {
+    "grid": [
+      28.65,
+      28.763
+    ],
+    "rawGrid": [
+      28.65,
+      28.763
+    ],
+    "writingPitch": null,
+    "confidence": [
+      0.494,
+      0.219
+    ],
+    "size": [
+      693,
+      1108
+    ],
+    "numberBox": [
+      430,
+      938,
+      520,
+      977
+    ],
+    "reviewed": true
+  },
   "087.png": {
     "grid": [
       26.199,
@@ -3535,6 +3561,33 @@
     ],
     "reviewed": true
   },
+  "140.png": {
+    "grid": [
+      30.954,
+      28.349
+    ],
+    "rawGrid": [
+      31.563,
+      28.092
+    ],
+    "writingPitch": 27.52,
+    "confidence": [
+      0.169,
+      0.093
+    ],
+    "size": [
+      640,
+      1063
+    ],
+    "numberBox": [
+      495,
+      930,
+      580,
+      970
+    ],
+    "reviewed": true,
+    "manualGridReason": "Faint full-page rules: reviewed empty upper patch (100,100,600,330), measured 30.954 x 28.349 px; handwritten line spacing 27.52 px confirms vertical pitch. Preserve photographed horizontal/vertical proportions."
+  },
   "141.png": {
     "grid": [
       24.424,
@@ -4104,6 +4157,32 @@
       927,
       650,
       955
+    ],
+    "reviewed": true
+  },
+  "163.png": {
+    "grid": [
+      26.802,
+      26.991
+    ],
+    "rawGrid": [
+      26.802,
+      26.991
+    ],
+    "writingPitch": 26.5,
+    "confidence": [
+      0.718,
+      0.433
+    ],
+    "size": [
+      618,
+      1028
+    ],
+    "numberBox": [
+      395,
+      920,
+      510,
+      975
     ],
     "reviewed": true
   },

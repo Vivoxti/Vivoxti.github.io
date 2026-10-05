@@ -962,7 +962,7 @@ async function init() {
   $('#open-button').disabled = true;
   $('#front-cover').disabled = true;
   try {
-    const response = await fetch('assets/book.json?v=2');
+    const response = await fetch('assets/book.json?v=3');
     if (!response.ok) throw new Error(`Archive response: ${response.status}`);
     state.data = await response.json();
     try {
@@ -974,7 +974,8 @@ async function init() {
       if (saved?.mode === 'text') state.mode = 'text';
     } catch { /* Storage is optional. */ }
     setMode(state.mode);
-    $('#archive-note').textContent = `Сохранены обложка, ${state.data.available - 5} страниц стихов и пять листов содержания. Страницы 1 и 2 не существуют; ${state.data.missing.join(', ')} пока не найдены.`;
+    const missingNote = state.data.missing.length ? ` Страницы ${state.data.missing.join(', ')} пока не найдены.` : '';
+    $('#archive-note').textContent = `Сохранены обложка, ${state.data.available - 5} страниц стихов и пять листов содержания. Страницы 1 и 2 не существуют.${missingNote}`;
     renderSpread();
     document.body.classList.remove('loading');
     $('#open-button').disabled = false;
