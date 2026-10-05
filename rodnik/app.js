@@ -11,7 +11,7 @@ const ui = {
 const mobile = matchMedia('(max-width: 700px)');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const state = { data: null, cursor: 0, mode: 'original', opened: false, busy: false, zoomIndex: 0, zoom: 1, turn: null };
-const paging = { target: null, running: false, active: null, speed: 1 };
+const paging = { target: null, running: false, active: null, preparing: null, speed: 1 };
 let jumpSequence = 0;
 const step = () => mobile.matches ? 1 : 2;
 const escapeHtml = (text) => String(text).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -21,6 +21,153 @@ const lastCursor = () => Math.floor((state.data.pages.length - 1) / step()) * st
 const backIndex = () => state.data.pages.findIndex((page) => page.kind === 'back');
 const lastReadingCursor = () => Math.floor((backIndex() - 1) / step()) * step();
 const placement = ([x, y, width, height]) => `left:${x}%;top:${y}%;width:${width}%;height:${height}%`;
+
+const readerFontsReady = Promise.all([document.fonts.load('16px Pangolin'), document.fonts.load('16px Neucha')])
+  .then(() => document.fonts.ready).catch(() => {});
+// Retain decoded images, not just HTTP responses. Background work leaves two slots for the next sheet.
+const pageImages = { entries: new Map(), wanted: new Map(), protected: new Set(), active: 0, background: 0,
+  bytes: 0, latency: 250, direction: 1, lastInput: 0, inputRate: 1 };
+const imageBudget = () => (mobile.matches ? 32 : 64) * 1024 * 1024;
+
+function trimPageImages() {
+  const removable = [...pageImages.entries.values()]
+    .filter(entry => entry.status !== 'loading' && !pageImages.protected.has(entry.source))
+    .sort((a, b) => Number(pageImages.wanted.has(a.source)) - Number(pageImages.wanted.has(b.source))
+      || b.priority - a.priority || a.used - b.used);
+  for (const entry of removable) {
+    if (pageImages.bytes <= imageBudget() && pageImages.entries.size <= 96) break;
+    pageImages.entries.delete(entry.source);
+    pageImages.bytes -= entry.bytes;
+    entry.image = null;
+    entry.resolve(false);
+  }
+}
+
+function pumpPageImages() {
+  trimPageImages();
+  const queue = [...pageImages.entries.values()].filter(entry => entry.status === 'queued')
+    .sort((a, b) => a.priority - b.priority);
+  for (const entry of queue) {
+    if (pageImages.active >= 4) break;
+    const background = entry.priority > 0;
+    if (background && (pageImages.background >= 2 || pageImages.bytes >= imageBudget())) continue;
+    entry.status = 'loading';
+    pageImages.active++;
+    if (background) pageImages.background++;
+    const started = performance.now();
+    const image = entry.image = new Image();
+    image.decoding = 'async';
+    image.fetchPriority = background ? 'low' : 'high';
+    image.src = entry.source;
+    image.decode().then(() => true, () => image.complete && image.naturalWidth > 0).then(ready => {
+      entry.status = ready ? 'ready' : 'error';
+      entry.used = performance.now();
+      entry.bytes = ready ? image.naturalWidth * image.naturalHeight * 4 : 0;
+      pageImages.bytes += entry.bytes;
+      if (ready) pageImages.latency = pageImages.latency * .75 + (entry.used - started) * .25;
+      pageImages.active--;
+      if (background) pageImages.background--;
+      entry.resolve(ready);
+      pumpPageImages();
+    });
+  }
+}
+
+function warmImage(source, priority = 0) {
+  let entry = pageImages.entries.get(source);
+  if (entry?.status === 'error' && performance.now() - entry.used > 10000) {
+    pageImages.entries.delete(source);
+    entry = null;
+  }
+  if (!entry) {
+    let resolve;
+    const promise = new Promise(done => { resolve = done; });
+    entry = { source, priority, promise, resolve, image: null, status: 'queued', bytes: 0, used: performance.now() };
+    pageImages.entries.set(source, entry);
+  }
+  entry.priority = Math.min(entry.priority, priority);
+  entry.used = performance.now();
+  if (priority === 0 && entry.image) entry.image.fetchPriority = 'high';
+  return entry.promise;
+}
+
+function warmPageWindow(current = state.cursor) {
+  if (!state.data) return;
+  const width = step();
+  const requested = paging.target === null ? 0 : paging.target - current;
+  const direction = Math.sign(requested) || (paging.active
+    ? paging.active.direction * (paging.active.reversed ? -1 : 1) : pageImages.direction);
+  const inputSpeed = performance.now() - pageImages.lastInput < 1000 ? pageImages.inputRate * .95 : 1;
+  const speed = Math.min(5, Math.max(1, paging.speed, paging.active?.desiredSpeed || 1, inputSpeed));
+  // Roughly two seconds of flight, plus measured network/decode latency and a safety margin.
+  const ahead = Math.min(16, Math.max(3, Math.ceil(speed / .95 * (2 + Math.min(1.5, pageImages.latency / 1000))) + 1));
+  const wanted = new Map();
+  const protectedSources = new Set();
+  const add = (index, priority, protect = false) => {
+    const page = state.data.pages[index];
+    if (!page) return;
+    for (const source of [page.image, page.numberImage].filter(Boolean)) {
+      wanted.set(source, Math.min(wanted.get(source) ?? Infinity, priority));
+      if (protect) protectedSources.add(source);
+    }
+  };
+  for (let offset = 0; offset < width; offset++) add(current + offset, 0, true);
+  if (current !== state.cursor) {
+    // A jump must protect both the visible spread and its destination until the latter is ready.
+    for (let distance = 0; distance <= 3; distance++) {
+      for (let offset = 0; offset < width; offset++) add(state.cursor - direction * distance * width + offset, distance, true);
+    }
+  }
+  // Keep three recent spreads decoded for a change of direction.
+  for (let distance = 1; distance <= 3; distance++) {
+    for (let offset = 0; offset < width; offset++) add(current - direction * distance * width + offset, 2 + distance, true);
+  }
+  for (let distance = 1; distance <= ahead; distance++) {
+    for (let offset = 0; offset < width; offset++) add(current + direction * distance * width + offset, distance);
+  }
+  for (const index of paging.preparing?.indices || []) add(index, 0, true);
+  pageImages.wanted = wanted;
+  pageImages.protected = protectedSources;
+  for (const entry of pageImages.entries.values()) {
+    if (entry.status === 'queued' && !wanted.has(entry.source)) {
+      pageImages.entries.delete(entry.source);
+      entry.resolve(false);
+    } else entry.priority = wanted.get(entry.source) ?? Infinity;
+  }
+  for (const [source, priority] of wanted) warmImage(source, priority);
+  pumpPageImages();
+}
+
+async function prepareReadingImages(indices, mode = state.mode) {
+  const images = indices.flatMap(index => {
+    const page = state.data.pages[index];
+    return page && mode === 'original' ? [page.image, page.numberImage].filter(Boolean) : [];
+  });
+  const ready = images.map(source => warmImage(source, 0));
+  pumpPageImages();
+  await Promise.all([...ready, readerFontsReady]);
+}
+
+async function preparePageNodes(page) {
+  const template = document.createElement('template');
+  template.innerHTML = makePage(page);
+  const content = document.importNode(template.content, true);
+  // Even cached resources must be decoded for these exact DOM images before the sheet is exposed.
+  await Promise.all([...content.querySelectorAll('img')].map(image => image.decode().catch(() => {
+    if (image.naturalWidth) return;
+    if (image.classList.contains('ink-image')) {
+      const fallback = document.createElement('template');
+      fallback.innerHTML = makeTranscript(page);
+      image.replaceWith(document.importNode(fallback.content, true));
+    } else if (image.classList.contains('page-number-image')) {
+      const number = document.createElement('span');
+      number.className = 'page-number';
+      number.textContent = page.number;
+      image.replaceWith(number);
+    }
+  })));
+  return content;
+}
 
 function makeContents(text) {
   let pending = '';
@@ -66,8 +213,8 @@ function makePage(page, mode = state.mode) {
   } else if (page.kind === 'missing') {
     content = `<div class="missing-page"><span class="missing-number">${page.number}</span><p>Эта страница<br>ещё не найдена.</p><small>Оставили для неё место в книге.</small></div>`;
   } else {
-    content = mode === 'original' && page.image
-      ? `<img class="ink-image positioned-ink" style="${placement(page.layout)}" src="${page.image}" alt="${escapeHtml(page.text || 'Пустая страница')}" decoding="async" draggable="false">`
+    content = mode === 'original' && page.image && pageImages.entries.get(page.image)?.status !== 'error'
+      ? `<img class="ink-image positioned-ink" style="${placement(page.layout)}" src="${page.image}" alt="${escapeHtml(page.text || 'Пустая страница')}" decoding="sync" draggable="false">`
       : makeTranscript(page);
   }
   if (page.number) content += mode === 'original' && page.numberImage
@@ -182,8 +329,9 @@ function fitPage(container) {
   text.style.marginTop = `${Math.max(0, Math.min(inner.clientHeight - text.offsetHeight - 2, desiredY))}px`;
 }
 
-function renderPage(container, page, index) {
-  container.innerHTML = makePage(page);
+function renderPage(container, page, index, prepared) {
+  if (prepared) container.replaceChildren(prepared);
+  else container.innerHTML = makePage(page);
   container.dataset.index = index;
   container.setAttribute('aria-label', page?.number ? `Страница ${page.number}` : page?.kind === 'contents' ? 'Рукописное содержание' : page?.kind === 'back' ? 'Задняя обложка' : 'Титульная страница');
   const image = container.querySelector('.ink-image');
@@ -219,9 +367,7 @@ function updateNavigation() {
   $('#mode-original').disabled = state.busy;
   $('#mode-text').disabled = state.busy;
   ui.announcement.textContent = `Открыто: ${visible.map((p) => p.number ? `страница ${p.number}` : labelFor(p)).join(', ')}. ${state.mode === 'original' ? 'Оригинальный почерк' : 'Расшифрованный текст'}.`;
-  const ahead = paging.target === null ? state.cursor : state.cursor + Math.sign(paging.target - state.cursor) * Math.min(12, Math.abs(paging.target - state.cursor));
-  const preload = pages.slice(Math.max(0, Math.min(state.cursor - 2, ahead)), Math.max(state.cursor + 5, ahead + step()));
-  preload.forEach((p) => [p.image, p.numberImage].filter(Boolean).forEach((source) => { const img = new Image(); img.src = source; }));
+  warmPageWindow();
 }
 
 function renderSpread() {
@@ -494,6 +640,8 @@ function updateRibbonMotion() {
 }
 
 const bookTime = () => reducedMotion.matches ? 1 : 1200; // Matches --book-time.
+const waitForBookPose = () => Promise.allSettled([ui.stage, ui.book, ...ui.book.querySelectorAll('.book-half')]
+  .flatMap(element => element.getAnimations().map(animation => animation.finished)));
 const backShowing = () => ui.book.classList.contains('show-back') || ui.book.classList.contains('back-closed');
 
 // The back can be shown by spinning the closed book or by folding the last half over; both look identical at rest.
@@ -536,6 +684,8 @@ async function openBook({ keepCursor = false } = {}) {
     if (!keepCursor) state.cursor = lastReadingCursor();
     if (ui.book.classList.contains('show-back')) settleBack(true);
   }
+  warmPageWindow();
+  await prepareReadingImages(Array.from({ length: step() }, (_, offset) => state.cursor + offset));
   state.opened = true;
   setTilt(0, 0);
   nudgeRibbon(fromBack ? -12 : 12);
@@ -550,7 +700,7 @@ async function openBook({ keepCursor = false } = {}) {
   ui.toolbar.hidden = false;
   ui.navigation.hidden = false;
   glideStage(before);
-  await pause(bookTime() + 50);
+  await waitForBookPose();
   state.busy = false;
   renderSpread();
   if (mobile.matches) ui.experience.scrollIntoView({ behavior: reducedMotion.matches ? 'instant' : 'smooth', block: 'start' });
@@ -616,6 +766,12 @@ function turnPage(direction) {
   const current = paging.target ?? readingPosition();
   const target = Math.max(-step(), Math.min(lastCursor(), current + direction * step()));
   if (target === current) return;
+  const now = performance.now();
+  const interval = now - pageImages.lastInput;
+  pageImages.inputRate = direction === pageImages.direction && interval < 1000
+    ? pageImages.inputRate * .5 + Math.min(12, 1000 / Math.max(40, interval)) * .5 : 1;
+  pageImages.lastInput = now;
+  pageImages.direction = direction;
   jumpSequence++;
   paging.target = target;
   retimePageTurn();
@@ -668,6 +824,8 @@ function setTurnEasing(active, name) {
 }
 
 function retimePageTurn() {
+  const preparing = paging.preparing;
+  if (preparing && paging.target !== null && (paging.target - preparing.old) * preparing.direction <= 0) preparing.cancel();
   const active = paging.active;
   if (!active) return;
   // Reverse the same physical sheet when the reader changes their mind mid-turn.
@@ -740,23 +898,36 @@ async function animatePageTurn(direction) {
   if (target === state.cursor) return;
   if (target >= backIndex()) return showBackCover();
   state.busy = true;
-  nudgeRibbon(direction * 7);
-  updateNavigation();
   const pages = state.data.pages;
   const old = state.cursor;
   const compact = mobile.matches;
+  const surfaces = direction > 0
+    ? [[ui.front, pages[old + (compact ? 0 : 1)], old + (compact ? 0 : 1)],
+      [ui.back, compact ? null : pages[target], target],
+      [ui.right, pages[target + (compact ? 0 : 1)], target + (compact ? 0 : 1)]]
+    : [[ui.front, pages[target + (compact ? 0 : 1)], target + (compact ? 0 : 1)],
+      [ui.back, pages[old], old], [compact ? ui.right : ui.left, pages[target], target]];
+  let cancel;
+  const cancelled = new Promise(resolve => { cancel = () => resolve(null); });
+  const preparing = { old, direction, indices: [...new Set([old, ...surfaces.map(([, , index]) => index)])],
+    cancelled: false, cancel() { preparing.cancelled = true; cancel(); } };
+  paging.preparing = preparing;
+  updateNavigation();
+  const prepared = await Promise.race([
+    prepareReadingImages(preparing.indices).then(() => preparing.cancelled ? null
+      : Promise.all(surfaces.map(([, page]) => preparePageNodes(page)))),
+    cancelled,
+  ]);
+  if (paging.preparing === preparing) paging.preparing = null;
+  if (!prepared || compact !== mobile.matches || old !== state.cursor) {
+    state.busy = false;
+    updateNavigation();
+    return;
+  }
+  nudgeRibbon(direction * 7);
   ui.front.classList.add('right-page');
   ui.back.classList.add('left-page');
-  if (direction > 0) {
-    renderPage(ui.front, pages[old + (compact ? 0 : 1)], old + (compact ? 0 : 1));
-    renderPage(ui.back, compact ? null : pages[target], target);
-    renderPage(ui.right, pages[target + (compact ? 0 : 1)], target + (compact ? 0 : 1));
-  } else {
-    renderPage(ui.front, pages[target + (compact ? 0 : 1)], target + (compact ? 0 : 1));
-    renderPage(ui.back, pages[old], old);
-    if (!compact) renderPage(ui.left, pages[target], target);
-    else renderPage(ui.right, pages[target], target);
-  }
+  surfaces.forEach(([container, page, index], i) => renderPage(container, page, index, prepared[i]));
   [ui.front, ui.back].forEach((surface) => {
     const fold = document.createElement('div');
     fold.className = 'leaf-fold';
@@ -792,6 +963,7 @@ async function animatePageTurn(direction) {
   cancelAnimationFrame(active.frame);
   paging.active = null;
   state.cursor = Math.floor((active.reversed ? old : target) / step()) * step();
+  warmPageWindow();
   const continuing = paging.target !== null && paging.target !== state.cursor;
   // Mid-run only the page under the next sheet changes; the heavy bookkeeping waits for the last landing.
   const softenLanding = !continuing && !reducedMotion.matches;
@@ -846,10 +1018,16 @@ async function goToId(id) {
   if (index < 0) return;
   const request = ++jumpSequence;
   paging.target = null;
+  paging.preparing?.cancel();
   while (state.busy) await pause(16);
   if (request !== jumpSequence) return;
   if (id === 'back') return showBackCover();
-  state.cursor = Math.floor(index / step()) * step();
+  const cursor = Math.floor(index / step()) * step();
+  warmPageWindow(cursor);
+  await prepareReadingImages(Array.from({ length: step() }, (_, offset) => cursor + offset));
+  if (request !== jumpSequence) return;
+  state.cursor = cursor;
+  warmPageWindow();
   await openBook({ keepCursor: true });
   renderSpread();
   updateHash(id);
@@ -881,6 +1059,8 @@ async function setMode(mode) {
     document.body.classList.add('mode-changing');
   }
   try {
+    warmPageWindow();
+    await prepareReadingImages(Array.from({ length: step() }, (_, offset) => state.cursor + offset), mode);
     if (animate) clearFade = await fadePageContent(1, 0, 120);
     state.mode = mode;
     renderSpread();
@@ -999,6 +1179,7 @@ function bindEvents() {
     event.preventDefault();
     if (!state.data) return;
     paging.target = null;
+    paging.preparing?.cancel();
     jumpSequence++;
     while (state.busy) await pause(60);
     await closeBook();
@@ -1143,6 +1324,7 @@ function bindEvents() {
   const resize = () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
+      paging.preparing?.cancel();
       state.turn?.finish();
       if (paging.target !== null) paging.target = paging.target < 0 ? -step() : Math.floor(paging.target / step()) * step();
       state.cursor = Math.floor(state.cursor / step()) * step();
@@ -1171,7 +1353,7 @@ function bindEvents() {
     const match = location.hash.match(/^#page=(.+)$/);
     if (match && state.data) goToId(decodeURIComponent(match[1]));
   });
-  Promise.all([document.fonts.load('16px Pangolin'), document.fonts.load('16px Neucha')]).catch(() => {}).then(() => document.fonts.ready).then(() => { fittedSizes.clear(); renderSpread(); if ($('#zoom-dialog').open) renderZoom(); });
+  readerFontsReady.then(() => { fittedSizes.clear(); if (!state.busy) renderSpread(); if ($('#zoom-dialog').open) renderZoom(); });
 }
 
 async function init() {
@@ -1191,7 +1373,7 @@ async function init() {
       }
       if (saved?.mode === 'text') state.mode = 'text';
     } catch { /* Storage is optional. */ }
-    setMode(state.mode);
+    await setMode(state.mode);
     const missingNote = state.data.missing.length ? ` Страницы ${state.data.missing.join(', ')} пока не найдены.` : '';
     const poemCount = state.data.available - 5;
     const pageWord = poemCount % 100 >= 11 && poemCount % 100 <= 14 ? 'страниц' : poemCount % 10 === 1 ? 'страница' : poemCount % 10 >= 2 && poemCount % 10 <= 4 ? 'страницы' : 'страниц';
