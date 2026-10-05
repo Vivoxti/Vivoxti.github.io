@@ -129,8 +129,8 @@ function fittedFontSize(kind, width, height) {
       const room = poem.availableWidth / size - poem.naturalWidth / poem.reference;
       spacing = Math.min(spacing, room / poem.longest);
     }
-    // A poem that cannot take even the natural width still has to fit.
-    for (const poem of poems) size = Math.min(size, Math.floor(poem.reference * poem.availableWidth / poem.naturalWidth * 20) / 20);
+    // Even the plain width of the widest poem must leave a margin at the page edge.
+    for (const poem of poems) size = Math.min(size, Math.floor(poem.reference * poem.availableWidth * .94 / poem.naturalWidth * 20) / 20);
     spacing = Math.max(0, spacing * .9);
     // Small sizes round glyph advances, so confirm with real measurements and back off until every poem fits.
     for (let attempt = 0; attempt < 8 && spacing > 0; attempt++) {
@@ -962,7 +962,7 @@ function bindEvents() {
     const match = location.hash.match(/^#page=(.+)$/);
     if (match && state.data) goToId(decodeURIComponent(match[1]));
   });
-  document.fonts.ready.then(() => { fittedSizes.clear(); fittedSpacing.clear(); renderSpread(); if ($('#zoom-dialog').open) renderZoom(); });
+  Promise.all([document.fonts.load('16px Pangolin'), document.fonts.load('16px Neucha')]).catch(() => {}).then(() => document.fonts.ready).then(() => { fittedSizes.clear(); fittedSpacing.clear(); renderSpread(); if ($('#zoom-dialog').open) renderZoom(); });
 }
 
 async function init() {
