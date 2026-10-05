@@ -484,7 +484,6 @@ async function init() {
       if (saved?.mode === 'text') state.mode = 'text';
     } catch { /* Storage is optional. */ }
     setMode(state.mode);
-    $('#footer-detail').textContent = `${state.data.available + 1} сохранённых страниц · семейный архив`;
     $('#archive-note').textContent = `Сохранены обложка, ${state.data.available - 5} страниц стихов и пять листов содержания. Страницы 1 и 2 не существуют; ${state.data.missing.join(', ')} пока не найдены.`;
     renderSpread();
     document.body.classList.remove('loading');
