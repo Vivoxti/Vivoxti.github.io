@@ -515,7 +515,10 @@ async function init() {
     $('#open-button').textContent = 'Обновить страницу';
     $('#open-button').disabled = false;
     $('#open-button').addEventListener('click', () => location.reload(), { once: true });
-    $('.intro-description').textContent = 'Не удалось загрузить книгу. Попробуйте обновить страницу.';
+    const message = document.createElement('p');
+    message.className = 'intro-description';
+    message.textContent = 'Не удалось загрузить книгу. Попробуйте обновить страницу.';
+    $('#open-button').before(message);
     document.body.classList.remove('loading');
   }
 }
