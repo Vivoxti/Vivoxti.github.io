@@ -102,3 +102,15 @@ dialog{border:1px solid var(--line);background:var(--bg);color:var(--ink);paddin
   .reading-hint{margin:8px 0 0}
 }
 @media(max-width:700px) and (prefers-reduced-motion:reduce){.experience.open .half-left{transition-delay:0s}}
+/* Phone reading: no gesture hint line; the freed height goes to a larger book. */
+@media(max-width:700px){
+  :root{--page-w:min(86vw,360px,calc((100svh - 210px)/1.53))}
+  .reading-hint{display:none}
+  .reader-navigation input[type=range]{margin:10px 0 4px}
+  /* The left half of the spread lies outside a phone screen. A veil of page background over the margin
+     lets the cover and turned sheets dissolve as they cross the spine instead of popping out at the end. */
+  .stage:after{content:"";position:absolute;z-index:3;top:-60px;bottom:-70px;left:-24px;width:calc(50% - var(--page-w)/2 + 24px);background:linear-gradient(90deg,var(--bg) calc(100% - 8px),#f2eee500);pointer-events:none;opacity:0;transition:opacity .4s ease}
+  .experience.open .stage:after{opacity:1;transition:opacity .75s cubic-bezier(.4,0,.6,1) .25s}
+  .experience.open .half-left{visibility:visible;transition:transform var(--book-time) var(--book-ease)}
+  .reader-navigation{position:relative;z-index:4}
+}
