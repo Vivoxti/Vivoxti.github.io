@@ -69,6 +69,59 @@ function makePage(page, mode = state.mode) {
   return grain + content;
 }
 
+// One font size per sheet size, shared by every poem and by every contents sheet.
+const fittedSizes = new Map();
+function fittedFontSize(kind, width, height) {
+  const key = `${kind}:${width}x${height}`;
+  if (!width || !height || !state.data) return 14;
+  if (fittedSizes.has(key)) return fittedSizes.get(key);
+  const probe = document.createElement('div');
+  probe.className = 'page';
+  probe.style.cssText = `position:absolute;left:-10000px;top:0;width:${width}px;height:${height}px;visibility:hidden;pointer-events:none`;
+  document.body.append(probe);
+  const content = (inner) => {
+    const style = getComputedStyle(inner);
+    return [
+      inner.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight),
+      inner.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom),
+    ];
+  };
+  let size = Infinity;
+  for (const page of state.data.pages) {
+    if (page.kind !== kind || !page.text?.trim()) continue;
+    probe.innerHTML = makeTranscript(page);
+    const inner = probe.firstElementChild;
+    const text = inner.firstElementChild;
+    text.style.lineHeight = '1.4';
+    if (kind === 'contents') {
+      inner.classList.add('contents-sheet');
+      // Titles wrap and leaders stretch, so search for the largest size that fits.
+      let low = 1;
+      let high = Math.min(size, Math.max(18, width / 28 * 1.5) * .72);
+      for (let i = 0; i < 14; i++) {
+        const candidate = (low + high) / 2;
+        text.style.fontSize = `${candidate}px`;
+        if (text.scrollHeight <= inner.clientHeight && text.scrollWidth <= inner.clientWidth) low = candidate;
+        else high = candidate;
+      }
+      size = Math.min(size, low);
+    } else {
+      // Poems keep their lines unbroken, so their size scales linearly with the font.
+      const reference = 20;
+      text.style.fontSize = `${reference}px`;
+      text.style.whiteSpace = 'pre';
+      text.style.maxWidth = 'none';
+      const bounds = text.getBoundingClientRect();
+      const [availableWidth, availableHeight] = content(inner);
+      size = Math.min(size, reference * availableWidth / bounds.width, reference * availableHeight / bounds.height);
+    }
+  }
+  probe.remove();
+  size = Number.isFinite(size) ? Math.floor(size * .98 * 20) / 20 : 14;
+  fittedSizes.set(key, size);
+  return size;
+}
+
 function fitPage(container) {
   const width = container.clientWidth;
   const layout = state.data?.layout || { columns: 28, textFontCells: .8, textLineCells: 1 };
@@ -82,23 +135,11 @@ function fitPage(container) {
     text.style.fontSize = `${22.4 * state.zoom}px`;
     return;
   }
-  // Keep a generous uniform font; longer poems scroll rather than shrink.
-  const fontSize = Math.max(18, cell * 1.5) * .8;
-  text.style.fontSize = `${fontSize}px`;
+  const isContents = text.classList.contains('book-contents');
+  text.style.fontSize = `${fittedFontSize(isContents ? 'contents' : 'page', width, container.clientHeight)}px`;
   text.style.lineHeight = '1.4';
-  if (text.classList.contains('book-contents')) {
-    const inner = text.parentElement;
-    inner.classList.add('contents-sheet');
-    let low = 1;
-    let high = fontSize * .9;
-    // Fit the complete index, including wrapped titles and section headings.
-    for (let i = 0; i < 12; i++) {
-      const size = (low + high) / 2;
-      text.style.fontSize = `${size}px`;
-      if (text.scrollHeight <= inner.clientHeight && text.scrollWidth <= inner.clientWidth) low = size;
-      else high = size;
-    }
-    text.style.fontSize = `${Math.floor(low * 20) / 20}px`;
+  if (isContents) {
+    text.parentElement.classList.add('contents-sheet');
     return;
   }
   const inner = text.parentElement;
@@ -227,19 +268,128 @@ function alignCoverButton({ afterTurn = false } = {}) {
   const until = performance.now() + (reducedMotion.matches ? 50 : 1450);
   const align = () => {
     if (state.opened) return;
-    const cover = ui.book.classList.contains('show-back') ? $('.cover-rear') : $('#front-cover');
-    const left = cover.querySelector('.anchor-left').getBoundingClientRect();
-    const right = cover.querySelector('.anchor-right').getBoundingClientRect();
-    const float = $('#book-float').getBoundingClientRect();
-    const button = $('#rotate-cover');
-    button.style.setProperty('--cover-center', `${(left.left + right.left) / 2 - float.left}px`);
-    button.style.setProperty('--cover-control-top', `${Math.max(left.top, right.top) - float.top + 22}px`);
+    placeCoverButton();
     if (performance.now() < until) coverAlignmentFrame = requestAnimationFrame(align);
   };
   coverAlignmentFrame = requestAnimationFrame(align);
 }
 
-const ribbonLinks = [...document.querySelectorAll('.ribbon-segment')].map((element) => ({ element, angle: 0, velocity: 0 }));
+function placeCoverButton() {
+  const cover = ui.book.classList.contains('show-back') ? $('.cover-rear') : $('#front-cover');
+  const left = cover.querySelector('.anchor-left').getBoundingClientRect();
+  const right = cover.querySelector('.anchor-right').getBoundingClientRect();
+  const float = $('#book-float').getBoundingClientRect();
+  const button = $('#rotate-cover');
+  button.style.setProperty('--cover-center', `${(left.left + right.left) / 2 - float.left}px`);
+  button.style.setProperty('--cover-control-top', `${Math.max(left.top, right.top) - float.top + 22}px`);
+}
+
+// While closed, the book leans slightly toward the pointer or with the phone, so its depth shows.
+const tilt = { element: $('#book-tilt'), shadow: $('.ground-shadow'), x: 0, y: 0, targetX: 0, targetY: 0, frame: null, last: null, base: null, permission: false };
+const clamp = (value) => Math.max(-1, Math.min(1, value));
+function setTilt(horizontal, vertical) {
+  const active = !state.opened && !reducedMotion.matches;
+  tilt.targetY = active ? clamp(horizontal) * 8 : 0;
+  tilt.targetX = active ? clamp(vertical) * -5 : 0;
+  if (!tilt.frame) { tilt.last = null; tilt.frame = requestAnimationFrame(animateTilt); }
+}
+function animateTilt(time) {
+  const dt = Math.min((time - (tilt.last ?? time - 16)) / 1000, .05);
+  tilt.last = time;
+  const ease = 1 - Math.exp(-dt * 5);
+  tilt.x += (tilt.targetX - tilt.x) * ease;
+  tilt.y += (tilt.targetY - tilt.y) * ease;
+  const settled = Math.abs(tilt.targetX - tilt.x) < .01 && Math.abs(tilt.targetY - tilt.y) < .01;
+  if (settled) { tilt.x = tilt.targetX; tilt.y = tilt.targetY; }
+  const resting = !tilt.x && !tilt.y;
+  tilt.element.style.transform = resting ? '' : `rotateX(${tilt.x.toFixed(3)}deg) rotateY(${tilt.y.toFixed(3)}deg)`;
+  tilt.shadow.style.translate = resting ? '' : `${(tilt.y * -1.6).toFixed(2)}px ${(tilt.x * .8).toFixed(2)}px`;
+  if (!state.opened) placeCoverButton();
+  tilt.frame = settled ? null : requestAnimationFrame(animateTilt);
+}
+function followPointer(event) {
+  if (event.pointerType !== 'mouse') return;
+  const stage = ui.stage.getBoundingClientRect();
+  setTilt((event.clientX - stage.left - stage.width / 2) / (innerWidth / 2), (event.clientY - stage.top - stage.height / 2) / (innerHeight / 2));
+}
+function followOrientation(event) {
+  if (event.beta == null || event.gamma == null) return;
+  const angle = screen.orientation?.angle ?? window.orientation ?? 0;
+  const [x, y] = {
+    90: [event.beta, -event.gamma],
+    180: [-event.gamma, -event.beta],
+    270: [-event.beta, event.gamma],
+    '-90': [-event.beta, event.gamma],
+  }[angle] || [event.gamma, event.beta];
+  if (!tilt.base || Math.abs(x - tilt.base[0]) > 60 || Math.abs(y - tilt.base[1]) > 60) tilt.base = [x, y];
+  // The neutral position slowly follows the way the phone is held.
+  tilt.base[0] += (x - tilt.base[0]) * .01;
+  tilt.base[1] += (y - tilt.base[1]) * .01;
+  setTilt((x - tilt.base[0]) / 18, (y - tilt.base[1]) / 18);
+}
+function listenToOrientation() {
+  if (tilt.permission || !('DeviceOrientationEvent' in window)) return;
+  tilt.permission = true;
+  if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+    // iOS asks for motion access only after a tap.
+    DeviceOrientationEvent.requestPermission()
+      .then((answer) => { if (answer === 'granted') addEventListener('deviceorientation', followOrientation); })
+      .catch(() => {});
+  } else {
+    addEventListener('deviceorientation', followOrientation);
+  }
+}
+
+const ribbonLinks = Array.from({ length: 5 }, () => ({ angle: 0, velocity: 0 }));
+const ribbon = { element: $('.ribbon'), svg: $('.ribbon-shape'), width: 0, height: 0, root: 0, tip: 0 };
+function measureRibbon() {
+  const style = getComputedStyle(ribbon.element);
+  ribbon.width = ribbon.element.clientWidth;
+  ribbon.height = ribbon.element.clientHeight;
+  ribbon.root = parseFloat(style.getPropertyValue('--ribbon-root')) || ribbon.height * .55;
+  ribbon.tip = parseFloat(style.getPropertyValue('--ribbon-tip')) || 8;
+  ribbon.svg.setAttribute('viewBox', `0 0 ${ribbon.width} ${ribbon.height}`);
+  drawRibbon();
+}
+// The hanging part is one continuous strip whose direction follows the simulated links.
+function drawRibbon() {
+  const { width, height, root, tip } = ribbon;
+  if (!width || !height) return;
+  const free = height - root;
+  // Each link's absolute angle sits at its middle; the strip starts straight below the root.
+  const count = ribbonLinks.length;
+  const nodes = [[0, 0]];
+  let total = 0;
+  ribbonLinks.forEach((link, i) => { total += link.angle; nodes.push([(i + .5) / count, total]); });
+  nodes.push([1, total]);
+  const angleAt = (t) => {
+    const i = nodes.findIndex(([position]) => position >= t);
+    const [x0, a0] = nodes[Math.max(0, i - 1)];
+    const [x1, a1] = nodes[i];
+    return (x1 > x0 ? a0 + (a1 - a0) * (t - x0) / (x1 - x0) : a1) * Math.PI / 180;
+  };
+  const steps = 18;
+  const half = width / 2;
+  const left = [[0, 0], [0, root]];
+  const right = [[width, 0], [width, root]];
+  let x = half;
+  let y = root;
+  let angle = 0;
+  for (let i = 1; i <= steps; i++) {
+    angle = angleAt((i - .5) / steps);
+    x -= Math.sin(angle) * free / steps;
+    y += Math.cos(angle) * free / steps;
+    left.push([x - Math.cos(angle) * half, y - Math.sin(angle) * half]);
+    right.push([x + Math.cos(angle) * half, y + Math.sin(angle) * half]);
+  }
+  const notch = [x + Math.sin(angle) * tip * .47, y - Math.cos(angle) * tip * .47];
+  const line = (points) => points.map(([px, py], i) => `${i ? 'L' : 'M'}${px.toFixed(2)} ${py.toFixed(2)}`).join('');
+  const outline = `${line([...left, notch, ...[...right].reverse()])}Z`;
+  ribbon.svg.querySelectorAll('.ribbon-body').forEach((path) => path.setAttribute('d', outline));
+  const [lightEdge, darkEdge] = ribbon.svg.querySelectorAll('.ribbon-edge');
+  lightEdge.setAttribute('d', line(left));
+  darkEdge.setAttribute('d', line(right));
+}
 let ribbonFrame;
 let ribbonVisible = false;
 let ribbonLastTime;
@@ -259,9 +409,8 @@ function animateRibbon(time) {
     const target = parentAngle * .32 + Math.sin(time / 2100 - index * .55) * .25;
     link.velocity += ((target - link.angle) * (58 - index * 5) - link.velocity * (8 - index * .45)) * dt;
     link.angle += link.velocity * dt;
-    link.element.style.transform = `rotateZ(${link.angle.toFixed(3)}deg) rotateX(${(link.angle * .22).toFixed(3)}deg) rotateY(${(link.angle * .35).toFixed(3)}deg)`;
-    link.element.style.setProperty('--fold-shadow', Math.min(.2, .04 + Math.abs(link.angle) * .012).toFixed(3));
   });
+  drawRibbon();
   ribbonFrame = requestAnimationFrame(animateRibbon);
 }
 function updateRibbonMotion() {
@@ -269,11 +418,8 @@ function updateRibbonMotion() {
   ribbonLastTime = null;
   ribbonFrame = null;
   if (reducedMotion.matches) {
-    ribbonLinks.forEach((link) => {
-      link.angle = link.velocity = 0;
-      link.element.style.transform = '';
-      link.element.style.removeProperty('--fold-shadow');
-    });
+    ribbonLinks.forEach((link) => { link.angle = link.velocity = 0; });
+    drawRibbon();
   } else if (ribbonVisible && !document.hidden) ribbonFrame = requestAnimationFrame(animateRibbon);
 }
 
@@ -285,6 +431,7 @@ async function openBook() {
     await pause(reducedMotion.matches ? 1 : 650);
   }
   state.opened = true;
+  setTilt(0, 0);
   nudgeRibbon(12);
   state.busy = true;
   document.body.classList.add('reading');
@@ -304,6 +451,7 @@ async function closeBook() {
   if (state.busy) return;
   const wasOpened = state.opened;
   state.opened = false;
+  tilt.base = null;
   nudgeRibbon(-12);
   document.body.classList.remove('reading');
   $('#front-cover').setAttribute('aria-hidden', 'false');
@@ -699,6 +847,14 @@ function bindEvents() {
   };
   window.addEventListener('resize', resize);
   new ResizeObserver(alignCoverButton).observe(ui.stage);
+  new ResizeObserver(measureRibbon).observe(ribbon.element);
+  measureRibbon();
+  addEventListener('pointermove', followPointer, { passive: true });
+  document.documentElement.addEventListener('pointerleave', () => setTilt(0, 0));
+  reducedMotion.addEventListener('change', () => setTilt(0, 0));
+  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+    for (const type of ['touchend', 'click']) document.addEventListener(type, listenToOrientation, { once: true });
+  } else listenToOrientation();
   new IntersectionObserver(([entry]) => {
     ribbonVisible = entry.isIntersecting;
     updateRibbonMotion();
@@ -710,7 +866,7 @@ function bindEvents() {
     const match = location.hash.match(/^#page=(.+)$/);
     if (match && state.data) goToId(decodeURIComponent(match[1]));
   });
-  document.fonts.ready.then(() => { renderSpread(); if ($('#zoom-dialog').open) renderZoom(); });
+  document.fonts.ready.then(() => { fittedSizes.clear(); renderSpread(); if ($('#zoom-dialog').open) renderZoom(); });
 }
 
 async function init() {

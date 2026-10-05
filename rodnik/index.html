@@ -12,8 +12,8 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/Neucha.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="preload" href="assets/fonts/RussoOne-Regular.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="stylesheet" href="style.css?v=16">
-  <script src="app.js?v=14" defer></script>
+  <link rel="stylesheet" href="style.css?v=17">
+  <script src="app.js?v=15" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -30,18 +30,20 @@
       <div class="stage" id="stage">
         <div class="ground-shadow"></div>
         <div class="book-float" id="book-float">
-          <div class="book" id="book">
-            <div class="cover-bottom"></div>
-            <div class="paper-stack stack-right"></div>
-            <div class="paper-stack stack-left"></div>
-            <div class="book-spine"><span>РОДНИК · В. ЛАВРИЩЕВ</span></div>
-            <div class="cover-rear"><div class="back-design"><div class="portrait-frame"><img class="back-portrait" src="assets/portrait.png?v=2" alt="Портрет Валентина Лаврищева" draggable="false"></div><h2>Валентин<br>Лаврищев</h2><span class="back-rule"></span></div><span class="cover-anchor anchor-left" aria-hidden="true"></span><span class="cover-anchor anchor-right" aria-hidden="true"></span></div>
-            <div class="page stationary left-page" id="left-page"></div>
-            <div class="page stationary right-page" id="right-page"></div>
-            <div class="turning-leaf" id="turning-leaf" aria-hidden="true"><div class="leaf-front page" id="leaf-front"></div><div class="leaf-back page" id="leaf-back"></div></div>
-            <button class="front-cover" id="front-cover" aria-label="Открыть книгу Родник"><span class="cover-face"><img src="assets/cover.webp" alt="Подлинная обложка тетради Родник" fetchpriority="high"></span><span class="cover-inside"></span><span class="cover-anchor anchor-left" aria-hidden="true"></span><span class="cover-anchor anchor-right" aria-hidden="true"></span></button>
-            <div class="binding" aria-hidden="true"></div>
-            <div class="ribbon" aria-hidden="true"><span class="ribbon-root"><span class="ribbon-segment"><span class="ribbon-segment"><span class="ribbon-segment"><span class="ribbon-segment"><span class="ribbon-segment ribbon-tip"></span></span></span></span></span></span></div>
+          <div class="book-tilt" id="book-tilt">
+            <div class="book" id="book">
+              <div class="cover-bottom"></div>
+              <div class="paper-stack stack-right"></div>
+              <div class="paper-stack stack-left"></div>
+              <div class="book-spine"><span>РОДНИК · В. ЛАВРИЩЕВ</span></div>
+              <div class="cover-rear"><div class="back-design"><div class="portrait-frame"><img class="back-portrait" src="assets/portrait.png?v=2" alt="Портрет Валентина Лаврищева" draggable="false"></div><h2>Валентин<br>Лаврищев</h2><span class="back-rule"></span></div><span class="cover-anchor anchor-left" aria-hidden="true"></span><span class="cover-anchor anchor-right" aria-hidden="true"></span></div>
+              <div class="page stationary left-page" id="left-page"></div>
+              <div class="page stationary right-page" id="right-page"></div>
+              <div class="turning-leaf" id="turning-leaf" aria-hidden="true"><div class="leaf-front page" id="leaf-front"></div><div class="leaf-back page" id="leaf-back"></div></div>
+              <button class="front-cover" id="front-cover" aria-label="Открыть книгу Родник"><span class="cover-face"><img src="assets/cover.webp" alt="Подлинная обложка тетради Родник" fetchpriority="high"></span><span class="cover-inside"></span><span class="cover-anchor anchor-left" aria-hidden="true"></span><span class="cover-anchor anchor-right" aria-hidden="true"></span></button>
+              <div class="binding" aria-hidden="true"></div>
+              <div class="ribbon" aria-hidden="true"><svg class="ribbon-shape" focusable="false"><defs><pattern id="ribbon-weave" width="1.8" height="1.7" patternUnits="userSpaceOnUse"><rect width="1.8" height=".6" fill="#f5d9a51f"/><rect width=".6" height="1.7" fill="#35211926"/></pattern><linearGradient id="ribbon-sheen"><stop offset="0" stop-color="#492b22" stop-opacity=".3"/><stop offset=".35" stop-color="#edb68a" stop-opacity=".2"/><stop offset="1" stop-color="#3e231d" stop-opacity=".36"/></linearGradient><linearGradient id="ribbon-fall" x1="0" y1="0" x2="0" y2="1"><stop offset=".55" stop-color="#311c18" stop-opacity="0"/><stop offset="1" stop-color="#311c18" stop-opacity=".16"/></linearGradient></defs><path class="ribbon-body" fill="#9d5e42"/><path class="ribbon-body" fill="url(#ribbon-weave)"/><path class="ribbon-body" fill="url(#ribbon-sheen)"/><path class="ribbon-body" fill="url(#ribbon-fall)"/><path class="ribbon-edge" fill="none" stroke="#e6ad78" stroke-opacity=".32" stroke-width=".8"/><path class="ribbon-edge" fill="none" stroke="#47251f" stroke-opacity=".34" stroke-width=".8"/></svg></div>
+            </div>
           </div>
           <button class="rotate-cover text-button" id="rotate-cover">Оборот обложки <span>↻</span></button>
         </div>
