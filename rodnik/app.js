@@ -250,15 +250,19 @@ function bendLeaf(duration, direction, easing) {
   const skin = document.createElement('div');
   skin.className = 'curve-skin';
   const animations = [];
-  // Hand the nearly flat curl back to the complete sheet before it lands.
+  // Fade the skin over an opaque, already flat sheet at the ends of the turn.
+  // Complementary opacity fades would let the previous page show through both layers.
   // Only flat faces fade; fading a 3D parent would flatten its two sides.
   const skinOpacity = [
     { opacity: 0 }, { opacity: 1, offset: .08 },
     { opacity: 1, offset: .92 }, { opacity: 0 },
   ];
+  const sheetOpacity = [
+    { opacity: 1 }, { opacity: 1, offset: .08 }, { opacity: 0, offset: .08 },
+    { opacity: 0, offset: .92 }, { opacity: 1, offset: .92 }, { opacity: 1 },
+  ];
   for (const surface of [ui.front, ui.back]) {
-    animations.push(surface.animate(skinOpacity.map(frame => ({ ...frame, opacity: 1 - frame.opacity })),
-      { duration, easing, fill: 'both' }));
+    animations.push(surface.animate(sheetOpacity, { duration, easing, fill: 'both' }));
   }
   for (let i = 0; i < count; i++) {
     const strip = document.createElement('div');
@@ -288,7 +292,9 @@ function bendLeaf(duration, direction, easing) {
     const flat = `translate3d(${x}px,0,0) rotateY(0deg)`;
     animations.push(strip.animate([
       { transform: flat },
-      { transform: `translate3d(${curvedX}px,0,${curvedZ}px) rotateY(${-theta * 180 / Math.PI}deg)`, offset: .5 },
+      { transform: flat, offset: .08, easing: 'ease-in-out' },
+      { transform: `translate3d(${curvedX}px,0,${curvedZ}px) rotateY(${-theta * 180 / Math.PI}deg)`, offset: .5, easing: 'ease-in-out' },
+      { transform: flat, offset: .92 },
       { transform: flat },
     ], { duration, easing, fill: 'both' }));
   }
