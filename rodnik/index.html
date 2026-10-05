@@ -11,8 +11,8 @@
   <title>Родник · Валентин Лаврищев</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/Neucha.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="stylesheet" href="style.css">
-  <script src="app.js?v=2" defer></script>
+  <link rel="stylesheet" href="style.css?v=3">
+  <script src="app.js?v=3" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -26,7 +26,6 @@
         <p class="author-name">Валентин Лаврищев</p>
         <p class="intro-description">Сборник стихов</p>
         <button class="primary-button" id="open-button">Открыть книгу <span>↗</span></button>
-        <p class="intro-note">ПОЛИСТАЙТЕ. ПОБУДЬТЕ МЕЖДУ СТРОК.</p>
       </div>
       <div class="stage" id="stage">
         <div class="ground-shadow"></div>
@@ -36,7 +35,7 @@
             <div class="paper-stack stack-right"></div>
             <div class="paper-stack stack-left"></div>
             <div class="book-spine"><span>РОДНИК · В. ЛАВРИЩЕВ</span></div>
-            <div class="cover-rear"><div class="back-design"><span class="back-mark">р.</span><p>Книга стихов<br>моего деда</p><h2>Валентин<br>Лаврищев</h2><span class="back-rule"></span><small>СОХРАНЕНО С ЛЮБОВЬЮ</small></div></div>
+            <div class="cover-rear"><div class="back-design"><span class="back-mark">р.</span><h2>Валентин<br>Лаврищев</h2><span class="back-rule"></span></div></div>
             <div class="page stationary left-page" id="left-page"></div>
             <div class="page stationary right-page" id="right-page"></div>
             <div class="turning-leaf" id="turning-leaf" aria-hidden="true"><div class="leaf-front page" id="leaf-front"></div><div class="leaf-back page" id="leaf-back"></div></div>
@@ -46,7 +45,6 @@
           </div>
         </div>
         <button class="rotate-cover text-button" id="rotate-cover">Оборот обложки <span>↻</span></button>
-        <p class="gesture-hint" id="gesture-hint">НАЖМИТЕ НА ОБЛОЖКУ, ЧТОБЫ ОТКРЫТЬ</p>
       </div>
       <div class="reader-toolbar" id="reader-toolbar" hidden>
         <button class="round-button" id="close-book" aria-label="Закрыть книгу" title="Закрыть книгу">↙</button>
@@ -61,7 +59,7 @@
     </section>
   </main>
   <dialog id="contents-dialog" class="drawer"><div class="dialog-header"><div><p class="eyebrow">ПО СТРАНИЦАМ ПАМЯТИ</p><h2>Содержание<span>.</span></h2></div><button class="round-button" data-close aria-label="Закрыть содержание">×</button></div><label class="search-field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg><input id="search-input" type="search" placeholder="Название, строка или номер страницы" aria-label="Поиск по книге"></label><div class="contents-list" id="contents-list"></div><p class="drawer-note">Нумерация сохранена по рукописи.</p></dialog>
-  <dialog id="about-dialog" class="about-dialog"><button class="round-button dialog-close" data-close aria-label="Закрыть информацию">×</button><p class="eyebrow">СЕМЕЙНЫЙ АРХИВ</p><h2>Слова,<br>которые остались<span>.</span></h2><p>Это книга стихов моего деда — <strong>Валентина Лаврищева</strong>. Он записывал их от руки в тетрадь «Родник»: о любви, семье, разлуке, работе и родных местах.</p><p>Здесь можно увидеть его настоящий почерк или прочитать расшифровку. Строки, строфы и авторские написания сохранены.</p><blockquote>«Я мысли те лишь излагал,<br>Что из души фонтаном били».</blockquote><p class="archive-note" id="archive-note"></p></dialog>
+  <dialog id="about-dialog" class="about-dialog"><button class="round-button dialog-close" data-close aria-label="Закрыть информацию">×</button><p class="eyebrow">СЕМЕЙНЫЙ АРХИВ</p><p>Это книга стихов <strong>Валентина Лаврищева</strong>. Он записывал их от руки в тетрадь «Родник»: о любви, семье, разлуке, работе и родных местах.</p><p>Здесь можно увидеть его настоящий почерк или прочитать расшифровку. Строки, строфы и авторские написания сохранены.</p><blockquote>«Я мысли те лишь излагал,<br>Что из души фонтаном били».</blockquote><p class="archive-note" id="archive-note"></p></dialog>
   <dialog id="zoom-dialog" class="zoom-dialog"><div class="zoom-toolbar"><span id="zoom-title">Страница</span><div><button class="round-button" id="zoom-minus" aria-label="Уменьшить">−</button><button class="round-button" id="zoom-plus" aria-label="Увеличить">+</button><button class="round-button" data-close aria-label="Закрыть увеличение">×</button></div></div><div class="zoom-scroll" id="zoom-scroll"><div class="zoom-paper page" id="zoom-paper"></div></div><div class="zoom-navigation"><button class="text-button" id="zoom-prev">← Назад</button><span>ПОЧЕРК И СЛОВА ОРИГИНАЛА</span><button class="text-button" id="zoom-next">Далее →</button></div></dialog>
   <dialog id="jump-dialog" class="jump-dialog"><button class="round-button dialog-close" data-close aria-label="Закрыть переход">×</button><p class="eyebrow">НУЖНАЯ СТРАНИЦА</p><h2>Куда перелистнуть?</h2><form id="jump-form"><label for="jump-input">Номер страницы, от 3 до 164</label><div><input id="jump-input" type="number" min="3" max="164" required inputmode="numeric"><button class="primary-button" type="submit">Перейти →</button></div></form></dialog>
   <p id="announcement" class="sr-only" role="status" aria-live="polite"></p>

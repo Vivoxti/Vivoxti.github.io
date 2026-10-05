@@ -28,7 +28,7 @@ function makePage(page, mode = state.mode) {
   if (page.kind === 'title') {
     content = '<div class="page-title-design"><span class="title-ornament">✳</span><p class="eyebrow">РУКОПИСНАЯ КНИГА СТИХОВ</p><h2>Родник</h2><h3>Валентин Лаврищев</h3><blockquote>Я мысли те лишь излагал,<br>Что из души фонтаном били.</blockquote><small>СОХРАНЕНО С ЛЮБОВЬЮ</small></div>';
   } else if (page.kind === 'back') {
-    content = '<div class="page-title-design"><span class="title-ornament">р.</span><p class="eyebrow">КНИГА СТИХОВ МОЕГО ДЕДА</p><h2 style="font-size:32px;letter-spacing:-1px">Валентин<br>Лаврищев</h2><blockquote>Его слова. Его почерк.<br>Наша память.</blockquote><small>СЕМЕЙНЫЙ АРХИВ</small></div>';
+    content = '<div class="page-title-design"><span class="title-ornament">р.</span><h2 style="font-size:32px;letter-spacing:-1px">Валентин<br>Лаврищев</h2><blockquote>Его слова. Его почерк.<br>Наша память.</blockquote><small>СЕМЕЙНЫЙ АРХИВ</small></div>';
   } else if (page.kind === 'missing') {
     content = `<div class="missing-page"><span class="missing-number">${page.number}</span><p>Эта страница<br>ещё не найдена.</p><small>Оставили для неё место в книге.</small></div>`;
   } else {
@@ -496,7 +496,7 @@ async function init() {
     $('#open-button').textContent = 'Обновить страницу';
     $('#open-button').disabled = false;
     $('#open-button').addEventListener('click', () => location.reload(), { once: true });
-    $('#gesture-hint').textContent = 'Не удалось загрузить книгу. Попробуйте обновить страницу.';
+    $('.intro-description').textContent = 'Не удалось загрузить книгу. Попробуйте обновить страницу.';
     document.body.classList.remove('loading');
   }
 }
