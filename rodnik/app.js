@@ -38,9 +38,14 @@ function makeContents(text) {
   return `<div class="book-contents">${rows.join('')}</div>`;
 }
 
+// Each verse line is its own block, so an overlong line wraps with a hanging indent.
+function makeVerses(text) {
+  return text.split('\n').map((line) => `<span class="verse">${escapeHtml(line) || '\u200b'}</span>`).join('');
+}
+
 function makeTranscript(page) {
   const [x, y, width, height] = page.layout || page.textLayout || [8, 8, 84, 84];
-  const content = page.kind === 'contents' ? makeContents(page.text) : `<pre class="page-text">${escapeHtml(page.text)}</pre>`;
+  const content = page.kind === 'contents' ? makeContents(page.text) : `<pre class="page-text">${makeVerses(page.text)}</pre>`;
   return `<div class="page-inner transcript-scroll" tabindex="0" aria-label="${page.kind === 'contents' ? 'Содержание' : 'Текст стихотворения'}" data-center-x="${x + width / 2}" data-center-y="${y + height / 2}">${content}</div>`;
 }
 
@@ -71,9 +76,41 @@ function makePage(page, mode = state.mode) {
 
 // One font size per sheet size, shared by every poem and by every contents sheet.
 const fittedSizes = new Map();
-const fittedSpacing = new Map();
-const POEM_LINE_HEIGHT = 1.3;
-const POEM_MAX_SPACING = .12;
+const POEM_LINE_HEIGHT = 1.2;
+// Largest size at which every poem, with its few overlong lines wrapped, still fits the sheet.
+function fitPoems(probe) {
+  const pages = state.data.pages.filter((page) => page.kind === 'page' && page.text?.trim());
+  const fits = (size, subset) => subset.every((page) => {
+    probe.innerHTML = makeTranscript(page);
+    const inner = probe.firstElementChild;
+    const text = inner.firstElementChild;
+    Object.assign(text.style, { fontSize: `${size}px`, lineHeight: String(POEM_LINE_HEIGHT) });
+    const style = getComputedStyle(inner);
+    return text.offsetHeight <= inner.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom) - 2;
+  });
+  // Unwrapped height scales linearly, so only the tallest poems can limit the size.
+  const reference = 20;
+  const limits = pages.map((page) => {
+    probe.innerHTML = makeTranscript(page);
+    const inner = probe.firstElementChild;
+    const text = inner.firstElementChild;
+    Object.assign(text.style, { fontSize: `${reference}px`, lineHeight: String(POEM_LINE_HEIGHT), maxWidth: 'none', whiteSpace: 'pre' });
+    return { page, limit: reference * inner.clientHeight / text.offsetHeight };
+  }).sort((a, b) => a.limit - b.limit);
+  const candidates = limits.slice(0, 12).map((entry) => entry.page);
+  let low = 4;
+  let high = limits[0].limit;
+  for (let i = 0; i < 12; i++) {
+    const middle = (low + high) / 2;
+    if (fits(middle, candidates)) low = middle; else high = middle;
+  }
+  let size = Math.floor(low * 20) / 20;
+  // Wrapping a long line can push another poem over, so confirm them all.
+  while (size > 4 && !fits(size, pages)) size = Math.floor((size - .05) * 20) / 20;
+  // Leave a little air below the longest poems.
+  return Math.floor(size * .98 * 20) / 20;
+}
+
 function fittedFontSize(kind, width, height) {
   const key = `${kind}:${width}x${height}`;
   if (!width || !height || !state.data) return 14;
@@ -82,16 +119,8 @@ function fittedFontSize(kind, width, height) {
   probe.className = 'page';
   probe.style.cssText = `position:absolute;left:-10000px;top:0;width:${width}px;height:${height}px;visibility:hidden;pointer-events:none`;
   document.body.append(probe);
-  const content = (inner) => {
-    const style = getComputedStyle(inner);
-    return [
-      inner.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight),
-      inner.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom),
-    ];
-  };
   let size = Infinity;
-  const poems = [];
-  for (const page of state.data.pages) {
+  for (const page of kind === 'contents' ? state.data.pages : []) {
     if (page.kind !== kind || !page.text?.trim()) continue;
     probe.innerHTML = makeTranscript(page);
     const inner = probe.firstElementChild;
@@ -109,46 +138,10 @@ function fittedFontSize(kind, width, height) {
         else high = candidate;
       }
       size = Math.min(size, low);
-    } else {
-      // Poems keep their lines unbroken, so their size scales linearly with the font.
-      const reference = 20;
-      text.style.fontSize = `${reference}px`;
-      text.style.whiteSpace = 'pre';
-      text.style.maxWidth = 'none';
-      const bounds = text.getBoundingClientRect();
-      const [availableWidth, availableHeight] = content(inner);
-      size = Math.min(size, reference * availableHeight / bounds.height);
-      poems.push({ reference, availableWidth, naturalWidth: bounds.width, longest: Math.max(...page.text.split('\n').map((line) => line.length)) });
     }
   }
-  size = Number.isFinite(size) ? Math.floor(size * .98 * 20) / 20 : 14;
-  if (kind === 'page') {
-    // Height limits the size, so spend the spare width on letter spacing, up to what the widest poem allows.
-    let spacing = POEM_MAX_SPACING;
-    for (const poem of poems) {
-      const room = poem.availableWidth / size - poem.naturalWidth / poem.reference;
-      spacing = Math.min(spacing, room / poem.longest);
-    }
-    // Even the plain width of the widest poem must leave a margin at the page edge.
-    for (const poem of poems) size = Math.min(size, Math.floor(poem.reference * poem.availableWidth * .94 / poem.naturalWidth * 20) / 20);
-    spacing = Math.max(0, spacing * .9);
-    // Small sizes round glyph advances, so confirm with real measurements and back off until every poem fits.
-    for (let attempt = 0; attempt < 8 && spacing > 0; attempt++) {
-      let fits = true;
-      for (const page of state.data.pages) {
-        if (page.kind !== 'page' || !page.text?.trim()) continue;
-        probe.innerHTML = makeTranscript(page);
-        const inner = probe.firstElementChild;
-        const text = inner.firstElementChild;
-        Object.assign(text.style, { fontSize: `${size}px`, lineHeight: String(POEM_LINE_HEIGHT), letterSpacing: `${spacing}em`, whiteSpace: 'pre', maxWidth: 'none' });
-        // Line breaking measures slightly differently from layout, so keep a margin at the page edge and by the spine.
-        if (text.getBoundingClientRect().width > content(inner)[0] * .94) { fits = false; break; }
-      }
-      if (fits) break;
-      spacing = attempt === 7 ? 0 : spacing * .88;
-    }
-    fittedSpacing.set(key, Math.floor(spacing * 1000) / 1000);
-  }
+  if (kind === 'page') size = fitPoems(probe);
+  else size = Number.isFinite(size) ? Math.floor(size * .98 * 20) / 20 : 14;
   probe.remove();
   fittedSizes.set(key, size);
   return size;
@@ -165,14 +158,12 @@ function fitPage(container) {
   if (!text) return;
   if (container.classList.contains('flow-text')) {
     text.style.fontSize = `${22.4 * state.zoom}px`;
-    if (text.classList.contains('page-text')) text.style.letterSpacing = '.06em';
     return;
   }
   const isContents = text.classList.contains('book-contents');
   const kind = isContents ? 'contents' : 'page';
   text.style.fontSize = `${fittedFontSize(kind, width, container.clientHeight)}px`;
   text.style.lineHeight = isContents ? '1.4' : String(POEM_LINE_HEIGHT);
-  if (!isContents) text.style.letterSpacing = `${fittedSpacing.get(`${kind}:${width}x${container.clientHeight}`) ?? 0}em`;
   if (isContents) {
     text.parentElement.classList.add('contents-sheet');
     return;
@@ -186,7 +177,7 @@ function fitPage(container) {
   // Keep a margin at the page edge, which also stops rounding from wrapping the longest line.
   const freeWidth = contentWidth - text.offsetWidth - Math.max(3, contentWidth * .03);
   text.style.marginLeft = `${Math.max(0, Math.min(freeWidth, desiredX))}px`;
-  text.style.marginTop = `${Math.max(0, Math.min(inner.clientHeight - text.offsetHeight, desiredY))}px`;
+  text.style.marginTop = `${Math.max(0, Math.min(inner.clientHeight - text.offsetHeight - 2, desiredY))}px`;
 }
 
 function renderPage(container, page, index) {
@@ -962,7 +953,7 @@ function bindEvents() {
     const match = location.hash.match(/^#page=(.+)$/);
     if (match && state.data) goToId(decodeURIComponent(match[1]));
   });
-  Promise.all([document.fonts.load('16px Pangolin'), document.fonts.load('16px Neucha')]).catch(() => {}).then(() => document.fonts.ready).then(() => { fittedSizes.clear(); fittedSpacing.clear(); renderSpread(); if ($('#zoom-dialog').open) renderZoom(); });
+  Promise.all([document.fonts.load('16px Pangolin'), document.fonts.load('16px Neucha')]).catch(() => {}).then(() => document.fonts.ready).then(() => { fittedSizes.clear(); renderSpread(); if ($('#zoom-dialog').open) renderZoom(); });
 }
 
 async function init() {
