@@ -12,7 +12,7 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/Neucha.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="preload" href="assets/fonts/RussoOne-Regular.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="stylesheet" href="style.css?v=7">
+  <link rel="stylesheet" href="style.css?v=8">
   <script src="app.js?v=6" defer></script>
 </head>
 <body>
@@ -59,7 +59,18 @@
     </section>
   </main>
   <dialog id="contents-dialog" class="drawer"><div class="dialog-header"><div><p class="eyebrow">ПО СТРАНИЦАМ ПАМЯТИ</p><h2>Содержание<span>.</span></h2></div><button class="round-button" data-close aria-label="Закрыть содержание">×</button></div><label class="search-field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg><input id="search-input" type="search" placeholder="Название, строка или номер страницы" aria-label="Поиск по книге"></label><div class="contents-list" id="contents-list"></div><p class="drawer-note">Нумерация сохранена по рукописи.</p></dialog>
-  <dialog id="about-dialog" class="about-dialog"><button class="round-button dialog-close" data-close aria-label="Закрыть информацию">×</button><p class="eyebrow">СЕМЕЙНЫЙ АРХИВ</p><p>Это книга стихов <strong>Валентина Лаврищева</strong>. Он записывал их от руки в тетрадь «Родник»: о любви, семье, разлуке, работе и родных местах.</p><p>Здесь можно увидеть его настоящий почерк или прочитать расшифровку. Строки, строфы и авторские написания сохранены.</p><blockquote>«Я мысли те лишь излагал,<br>Что из души фонтаном били».</blockquote><p class="archive-note" id="archive-note"></p></dialog>
+  <dialog id="about-dialog" class="about-dialog">
+    <button class="round-button dialog-close" data-close aria-label="Закрыть информацию">×</button>
+    <p class="eyebrow">СЕМЕЙНЫЙ АРХИВ</p>
+    <blockquote class="dedication-quote">
+      <p>Эти стихи написал Лаврищев Валентин Иванович. Столько красоты,доброты и терпения в одном человеке я не встречала никогда.</p>
+      <p>Люблю тебя,папа<br>Надеюсь у тебя все хорошо</p>
+      <time datetime="2026-10-05">05.10.2026</time>
+    </blockquote>
+    <p>Здесь можно увидеть его настоящий почерк или прочитать расшифровку. Строки, строфы и авторские написания сохранены.</p>
+    <blockquote>«Я мысли те лишь излагал,<br>Что из души фонтаном били».</blockquote>
+    <p class="archive-note" id="archive-note"></p>
+  </dialog>
   <dialog id="zoom-dialog" class="zoom-dialog"><div class="zoom-toolbar"><span id="zoom-title">Страница</span><div><button class="round-button" id="zoom-minus" aria-label="Уменьшить">−</button><button class="round-button" id="zoom-plus" aria-label="Увеличить">+</button><button class="round-button" data-close aria-label="Закрыть увеличение">×</button></div></div><div class="zoom-scroll" id="zoom-scroll"><div class="zoom-paper page" id="zoom-paper"></div></div><div class="zoom-navigation"><button class="text-button" id="zoom-prev">← Назад</button><span>ПОЧЕРК И СЛОВА ОРИГИНАЛА</span><button class="text-button" id="zoom-next">Далее →</button></div></dialog>
   <dialog id="jump-dialog" class="jump-dialog"><button class="round-button dialog-close" data-close aria-label="Закрыть переход">×</button><p class="eyebrow">НУЖНАЯ СТРАНИЦА</p><h2>Куда перелистнуть?</h2><form id="jump-form"><label for="jump-input">Номер страницы, от 3 до 164</label><div><input id="jump-input" type="number" min="3" max="164" required inputmode="numeric"><button class="primary-button" type="submit">Перейти →</button></div></form></dialog>
   <p id="announcement" class="sr-only" role="status" aria-live="polite"></p>
