@@ -169,8 +169,15 @@ function bendLeaf(duration, direction) {
 }
 
 let coverAlignmentFrame;
-function alignCoverButton() {
+let coverAlignmentTimer;
+function alignCoverButton({ afterTurn = false } = {}) {
   cancelAnimationFrame(coverAlignmentFrame);
+  clearTimeout(coverAlignmentTimer);
+  if (afterTurn && !reducedMotion.matches) {
+    // Keep the control still while perspective temporarily stretches the lower edge.
+    coverAlignmentTimer = setTimeout(alignCoverButton, 1320);
+    return;
+  }
   const until = performance.now() + (reducedMotion.matches ? 50 : 1450);
   const align = () => {
     if (state.opened) return;
@@ -186,6 +193,44 @@ function alignCoverButton() {
   coverAlignmentFrame = requestAnimationFrame(align);
 }
 
+const ribbonLinks = [...document.querySelectorAll('.ribbon-segment')].map((element) => ({ element, angle: 0, velocity: 0 }));
+let ribbonFrame;
+let ribbonVisible = false;
+let ribbonLastTime;
+function nudgeRibbon(strength) {
+  if (reducedMotion.matches) return;
+  ribbonLinks.forEach((link, index) => {
+    link.velocity = Math.max(-60, Math.min(60, link.velocity + strength * (1 + index * .16)));
+  });
+}
+function animateRibbon(time) {
+  if (!ribbonVisible || document.hidden || reducedMotion.matches) { ribbonFrame = null; return; }
+  const dt = Math.min((time - (ribbonLastTime || time)) / 1000, .033);
+  ribbonLastTime = time;
+  const breeze = Math.sin(time / 1000 * Math.PI * 2 / 7) * .45;
+  ribbonLinks.forEach((link, index) => {
+    const parentAngle = index ? ribbonLinks[index - 1].angle : breeze;
+    const target = parentAngle * .32 + Math.sin(time / 2100 - index * .55) * .25;
+    link.velocity += ((target - link.angle) * (58 - index * 5) - link.velocity * (8 - index * .45)) * dt;
+    link.angle += link.velocity * dt;
+    link.element.style.transform = `rotateZ(${link.angle.toFixed(3)}deg) rotateX(${(link.angle * .22).toFixed(3)}deg) rotateY(${(link.angle * .35).toFixed(3)}deg)`;
+    link.element.style.setProperty('--fold-shadow', Math.min(.2, .04 + Math.abs(link.angle) * .012).toFixed(3));
+  });
+  ribbonFrame = requestAnimationFrame(animateRibbon);
+}
+function updateRibbonMotion() {
+  cancelAnimationFrame(ribbonFrame);
+  ribbonLastTime = null;
+  ribbonFrame = null;
+  if (reducedMotion.matches) {
+    ribbonLinks.forEach((link) => {
+      link.angle = link.velocity = 0;
+      link.element.style.transform = '';
+      link.element.style.removeProperty('--fold-shadow');
+    });
+  } else if (ribbonVisible && !document.hidden) ribbonFrame = requestAnimationFrame(animateRibbon);
+}
+
 async function openBook() {
   if (!state.data || state.opened || state.busy) return;
   if (ui.book.classList.contains('show-back')) {
@@ -193,6 +238,7 @@ async function openBook() {
     await pause(reducedMotion.matches ? 1 : 650);
   }
   state.opened = true;
+  nudgeRibbon(12);
   state.busy = true;
   document.body.classList.add('reading');
   $('#front-cover').setAttribute('aria-hidden', 'true');
@@ -210,6 +256,7 @@ async function openBook() {
 async function closeBook() {
   if (state.busy) return;
   state.opened = false;
+  nudgeRibbon(-12);
   document.body.classList.remove('reading');
   $('#front-cover').setAttribute('aria-hidden', 'false');
   $('#front-cover').tabIndex = 0;
@@ -228,6 +275,7 @@ async function turnPage(direction) {
   const target = Math.max(0, Math.min(lastCursor(), state.cursor + direction * step()));
   if (target === state.cursor) return;
   state.busy = true;
+  nudgeRibbon(direction * 7);
   updateNavigation();
   const pages = state.data.pages;
   const old = state.cursor;
@@ -377,8 +425,9 @@ function bindEvents() {
   $('#front-cover').addEventListener('click', openBook);
   $('#rotate-cover').addEventListener('click', () => {
     ui.book.classList.toggle('show-back');
+    nudgeRibbon(ui.book.classList.contains('show-back') ? 24 : -24);
     $('#rotate-cover').innerHTML = ui.book.classList.contains('show-back') ? 'Лицевая обложка <span>↻</span>' : 'Оборот обложки <span>↻</span>';
-    alignCoverButton();
+    alignCoverButton({ afterTurn: true });
   });
   $('#close-book').addEventListener('click', closeBook);
   ui.prev.addEventListener('click', () => turnPage(-1));
@@ -480,6 +529,12 @@ function bindEvents() {
   };
   window.addEventListener('resize', resize);
   new ResizeObserver(alignCoverButton).observe(ui.stage);
+  new IntersectionObserver(([entry]) => {
+    ribbonVisible = entry.isIntersecting;
+    updateRibbonMotion();
+  }).observe($('#book-float'));
+  document.addEventListener('visibilitychange', updateRibbonMotion);
+  reducedMotion.addEventListener('change', updateRibbonMotion);
   mobile.addEventListener('change', resize);
   window.addEventListener('hashchange', () => {
     const match = location.hash.match(/^#page=(.+)$/);
