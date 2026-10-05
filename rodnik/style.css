@@ -22,3 +22,4 @@ dialog{border:1px solid var(--line);background:var(--bg);color:var(--ink);paddin
 .about-dialog .dedication-quote{margin:26px 0 30px;padding:4px 0 4px 21px;border-left:2px solid #a88a6080;font:italic 17px/1.75 Georgia,serif;color:#67573f}.dedication-quote p{margin:0}.dedication-quote p+p{margin-top:22px}.dedication-quote time{display:block;margin-top:22px;font:11px/1.5 Arial,sans-serif;letter-spacing:1.1px;color:#8b7a62}
 @media(max-width:370px){.about-dialog .dedication-quote{font-size:16px;padding-left:16px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;scroll-behavior:auto!important;transition-duration:.01ms!important}.book-float{translate:0 0!important}}
+.reader-close{min-height:39px;padding:0 2px;white-space:nowrap;flex-shrink:0}
