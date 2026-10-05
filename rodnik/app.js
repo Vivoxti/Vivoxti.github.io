@@ -79,14 +79,28 @@ function fitPage(container) {
   const text = container.querySelector('.page-text, .book-contents');
   if (!text) return;
   if (container.classList.contains('flow-text')) {
-    text.style.fontSize = `${28 * state.zoom}px`;
+    text.style.fontSize = `${22.4 * state.zoom}px`;
     return;
   }
   // Keep a generous uniform font; longer poems scroll rather than shrink.
-  const fontSize = Math.max(18, cell * 1.5);
+  const fontSize = Math.max(18, cell * 1.5) * .8;
   text.style.fontSize = `${fontSize}px`;
   text.style.lineHeight = '1.4';
-  if (text.classList.contains('book-contents')) return;
+  if (text.classList.contains('book-contents')) {
+    const inner = text.parentElement;
+    inner.classList.add('contents-sheet');
+    let low = 1;
+    let high = fontSize * .9;
+    // Fit the complete index, including wrapped titles and section headings.
+    for (let i = 0; i < 12; i++) {
+      const size = (low + high) / 2;
+      text.style.fontSize = `${size}px`;
+      if (text.scrollHeight <= inner.clientHeight && text.scrollWidth <= inner.clientWidth) low = size;
+      else high = size;
+    }
+    text.style.fontSize = `${Math.floor(low * 20) / 20}px`;
+    return;
+  }
   const inner = text.parentElement;
   text.style.margin = '0';
   const desiredX = width * Number(inner.dataset.centerX) / 100 - inner.offsetLeft - text.offsetWidth / 2;
@@ -540,6 +554,14 @@ function bindEvents() {
   });
   $('#open-button').addEventListener('click', openBook);
   $('#front-cover').addEventListener('click', openBook);
+  ui.stage.addEventListener('click', (event) => {
+    if (state.opened || state.busy || !state.data || event.target.closest('#rotate-cover')) return;
+    const cover = ui.book.classList.contains('show-back') ? $('.cover-rear') : $('#front-cover');
+    const bounds = cover.getBoundingClientRect();
+    const onCover = event.clientX >= bounds.left - 4 && event.clientX <= bounds.right + 4
+      && event.clientY >= bounds.top - 4 && event.clientY <= bounds.bottom + 4;
+    if (onCover || ui.book.contains(event.target)) openBook();
+  });
   $('#rotate-cover').addEventListener('click', () => {
     if (state.busy) return;
     ui.book.classList.toggle('show-back');
