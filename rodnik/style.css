@@ -114,3 +114,9 @@ dialog{border:1px solid var(--line);background:var(--bg);color:var(--ink);paddin
   .experience.open .half-left{visibility:visible;transition:transform var(--book-time) var(--book-ease)}
   .reader-navigation{position:relative;z-index:4}
 }
+/* Rigid phone sheet: a soft shade instead of the curl strips; swipes stay horizontal over scrolling text. */
+.leaf-shade{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0;background:linear-gradient(90deg,#3b2a1a1c,#3b2a1a33 55%,#3b2a1a52)}
+.leaf-back .leaf-shade{background:linear-gradient(270deg,#3b2a1a1c,#3b2a1a33 55%,#3b2a1a52)}
+.stage{-webkit-touch-callout:none}
+.stage img{-webkit-user-drag:none}
+.stage .transcript-scroll{touch-action:pan-y}

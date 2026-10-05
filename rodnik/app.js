@@ -867,6 +867,8 @@ const TURN_EASINGS = {
   settle: [.25, .65, .25, 1],
   flow: [.1, .1, .9, .9],
   rewind: [.42, 0, .58, 1],
+  // On a phone a forward sheet vanishes behind the spine once upright, so its visible rise gets the time instead.
+  glide: [.42, .08, .3, 1],
 };
 const bezierAt = (points, t) => {
   const [x1, y1, x2, y2] = points;
@@ -889,6 +891,17 @@ const bezierInverse = (points, progress) => {
   return (low + high) / 2;
 };
 const easingCss = (name) => `cubic-bezier(${TURN_EASINGS[name].join(',')})`;
+const landingEasing = (direction) => mobile.matches && direction > 0 ? 'glide' : 'settle';
+
+// The rigid phone sheet darkens as it stands up, turning away from the light.
+function shadeLeaf(duration, easing, upright) {
+  return [ui.front, ui.back].map((surface) => {
+    const shade = document.createElement('div');
+    shade.className = 'leaf-shade';
+    surface.append(shade);
+    return shade.animate([{ opacity: 0 }, { opacity: 1, offset: upright }, { opacity: 0 }], { duration, easing, fill: 'both' });
+  });
+}
 
 // Swap the easing of a sheet in flight without moving it, so the speed changes but the position never jumps.
 function setTurnEasing(active, name) {
@@ -915,7 +928,7 @@ function retimePageTurn() {
   const landed = active.reversed ? active.old : active.target;
   const remaining = paging.target === null ? 0 : Math.abs(paging.target - landed) / step();
   active.desiredSpeed = remaining ? Math.min(5, 1.7 + Math.sqrt(remaining) * .6) : active.reversed ? 1.5 : 1;
-  if (!reducedMotion.matches) setTurnEasing(active, active.reversed ? 'rewind' : remaining ? 'flow' : 'settle');
+  if (!reducedMotion.matches) setTurnEasing(active, active.reversed ? 'rewind' : remaining ? 'flow' : landingEasing(active.direction));
   applyTurnSpeed(active);
   if (!reducedMotion.matches) easeTurnSpeed(active);
 }
@@ -1018,18 +1031,22 @@ async function animatePageTurn(direction) {
   ui.leaf.classList.add('is-turning');
   fitPage(ui.front);
   fitPage(ui.back);
-  const duration = reducedMotion.matches ? 1 : 950;
+  const duration = reducedMotion.matches ? 1 : compact && direction > 0 ? 760 : 950;
+  // A forward phone sheet stands upright late: past that point it is hidden behind the spine.
+  const upright = compact && direction > 0 ? .65 : .5;
   // A run of sheets skips the curl: dozens of image strips per sheet would stall the next one.
+  // Phones always turn a rigid sheet: two dozen page copies in 3D are too heavy for a phone GPU.
   const runs = paging.target !== null && Math.abs(paging.target - target) > 0 && Math.sign(paging.target - target) === direction;
-  const easing = runs ? 'flow' : 'settle';
-  const bend = reducedMotion.matches || runs ? { animations: [], clear() {} } : bendLeaf(duration, direction, easingCss(easing));
+  const easing = runs ? 'flow' : landingEasing(direction);
+  const bend = reducedMotion.matches || runs || compact ? { animations: [], clear() {} } : bendLeaf(duration, direction, easingCss(easing));
+  if (compact && !reducedMotion.matches) bend.animations.push(...shadeLeaf(duration, easingCss(easing), upright));
   const start = direction > 0 ? 0 : -180;
   const end = direction > 0 ? -180 : 0;
   // Each face sits .6px above the hinge. At both ends its visible plane matches the static page exactly.
   const leafZ = parseFloat(getComputedStyle(ui.book).getPropertyValue('--page-z')) - .6;
   const animation = ui.leaf.animate([
     { transform: `translateZ(${leafZ}px) rotateY(${start}deg) rotateX(0deg)`, offset: 0 },
-    { transform: `translateZ(${leafZ + 20}px) rotateY(${(start + end) / 2}deg) rotateX(${direction * -3}deg)`, offset: .5 },
+    { transform: `translateZ(${leafZ + 20}px) rotateY(${(start + end) / 2}deg) rotateX(${direction * -3}deg)`, offset: upright },
     { transform: `translateZ(${leafZ}px) rotateY(${end}deg) rotateX(0deg)`, offset: 1 },
   ], { duration, easing: easingCss(easing), fill: 'forwards' });
   const animations = [animation, ...bend.animations];
@@ -1042,6 +1059,7 @@ async function animatePageTurn(direction) {
   try { await animation.finished; } catch { /* Layout changes may finish a turn early. */ }
   // A resize can finish the hinge early; bring its skin to the same endpoint before the handoff.
   bend.animations.forEach(item => item.finish());
+  [ui.front, ui.back].forEach(face => face.querySelectorAll('.leaf-shade').forEach(shade => shade.remove()));
   cancelAnimationFrame(active.frame);
   paging.active = null;
   state.cursor = Math.floor((active.reversed ? old : target) / step()) * step();
@@ -1400,18 +1418,24 @@ function bindEvents() {
     if (!pointer || pointer.id !== event.pointerId) return;
     const dx = event.clientX - pointer.x;
     const dy = event.clientY - pointer.y;
+    if (pointer.turned || Math.abs(dx) < 12 || Math.abs(dx) < Math.abs(dy) * 1.25) return;
     // Keep an established swipe on the stable stage while page contents change underneath it.
-    if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.25) ui.stage.setPointerCapture(event.pointerId);
+    try { if (!ui.stage.hasPointerCapture(event.pointerId)) ui.stage.setPointerCapture(event.pointerId); } catch { /* The pointer may already be gone. */ }
+    // Turn while the finger is still moving, so the sheet answers the swipe at once.
+    if (Math.abs(dx) > 32) {
+      pointer.turned = true;
+      turnPage(dx < 0 ? 1 : -1);
+    }
   });
   ui.stage.addEventListener('pointerup', (event) => {
     if (!pointer || pointer.id !== event.pointerId) return;
     const dx = event.clientX - pointer.x;
     const dy = event.clientY - pointer.y;
+    const turned = pointer.turned;
     pointer = null;
     if (ui.stage.hasPointerCapture(event.pointerId)) ui.stage.releasePointerCapture(event.pointerId);
-    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.25) {
-      turnPage(dx < 0 ? 1 : -1);
-    }
+    // A quick flick can end before a move event crosses the threshold.
+    if (!turned && Math.abs(dx) > 24 && Math.abs(dx) > Math.abs(dy) * 1.25) turnPage(dx < 0 ? 1 : -1);
   });
   ui.stage.addEventListener('pointercancel', () => { pointer = null; });
   ui.stage.addEventListener('lostpointercapture', () => { pointer = null; });
