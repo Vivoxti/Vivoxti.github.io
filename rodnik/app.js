@@ -975,7 +975,9 @@ async function init() {
     } catch { /* Storage is optional. */ }
     setMode(state.mode);
     const missingNote = state.data.missing.length ? ` Страницы ${state.data.missing.join(', ')} пока не найдены.` : '';
-    $('#archive-note').textContent = `Сохранены обложка, ${state.data.available - 5} страниц стихов и пять листов содержания. Страницы 1 и 2 не существуют.${missingNote}`;
+    const poemCount = state.data.available - 5;
+    const pageWord = poemCount % 100 >= 11 && poemCount % 100 <= 14 ? 'страниц' : poemCount % 10 === 1 ? 'страница' : poemCount % 10 >= 2 && poemCount % 10 <= 4 ? 'страницы' : 'страниц';
+    $('#archive-note').textContent = `Сохранены обложка, ${poemCount} ${pageWord} стихов и пять листов содержания. Страницы 1 и 2 не существуют.${missingNote}`;
     renderSpread();
     document.body.classList.remove('loading');
     $('#open-button').disabled = false;
