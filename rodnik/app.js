@@ -28,7 +28,7 @@ function makePage(page, mode = state.mode) {
   if (page.kind === 'title') {
     content = '<div class="page-title-design"><span class="title-ornament">✳</span><p class="eyebrow">РУКОПИСНАЯ КНИГА СТИХОВ</p><h2>Родник</h2><h3>Валентин Лаврищев</h3><blockquote>Я мысли те лишь излагал,<br>Что из души фонтаном били.</blockquote><small>СОХРАНЕНО С ЛЮБОВЬЮ</small></div>';
   } else if (page.kind === 'back') {
-    content = '<div class="page-title-design back-page-design"><div class="portrait-frame"><img class="back-portrait" src="assets/portrait.png" alt="Портрет Валентина Лаврищева" draggable="false"></div><h2 style="font-size:32px;letter-spacing:-1px">Валентин<br>Лаврищев</h2><blockquote>Его слова. Его почерк.<br>Наша память.</blockquote><small>СЕМЕЙНЫЙ АРХИВ</small></div>';
+    content = '<div class="page-title-design back-page-design"><div class="portrait-frame"><img class="back-portrait" src="assets/portrait.png?v=2" alt="Портрет Валентина Лаврищева" draggable="false"></div><h2 style="font-size:32px;letter-spacing:-1px">Валентин<br>Лаврищев</h2><blockquote>Его слова. Его почерк.<br>Наша память.</blockquote><small>СЕМЕЙНЫЙ АРХИВ</small></div>';
   } else if (page.kind === 'missing') {
     content = `<div class="missing-page"><span class="missing-number">${page.number}</span><p>Эта страница<br>ещё не найдена.</p><small>Оставили для неё место в книге.</small></div>`;
   } else {
@@ -175,9 +175,12 @@ function alignCoverButton() {
   const align = () => {
     if (state.opened) return;
     const cover = ui.book.classList.contains('show-back') ? $('.cover-rear') : $('#front-cover');
-    const bounds = cover.getBoundingClientRect();
-    const stage = ui.stage.getBoundingClientRect();
-    ui.stage.style.setProperty('--cover-center', `${bounds.left + bounds.width / 2 - stage.left}px`);
+    const left = cover.querySelector('.anchor-left').getBoundingClientRect();
+    const right = cover.querySelector('.anchor-right').getBoundingClientRect();
+    const float = $('#book-float').getBoundingClientRect();
+    const button = $('#rotate-cover');
+    button.style.setProperty('--cover-center', `${(left.left + right.left) / 2 - float.left}px`);
+    button.style.setProperty('--cover-control-top', `${Math.max(left.top, right.top) - float.top + 22}px`);
     if (performance.now() < until) coverAlignmentFrame = requestAnimationFrame(align);
   };
   coverAlignmentFrame = requestAnimationFrame(align);

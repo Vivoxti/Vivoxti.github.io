@@ -12,8 +12,8 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/Neucha.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="preload" href="assets/fonts/RussoOne-Regular.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="stylesheet" href="style.css?v=8">
-  <script src="app.js?v=6" defer></script>
+  <link rel="stylesheet" href="style.css?v=9">
+  <script src="app.js?v=7" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -35,16 +35,16 @@
             <div class="paper-stack stack-right"></div>
             <div class="paper-stack stack-left"></div>
             <div class="book-spine"><span>РОДНИК · В. ЛАВРИЩЕВ</span></div>
-            <div class="cover-rear"><div class="back-design"><div class="portrait-frame"><img class="back-portrait" src="assets/portrait.png" alt="Портрет Валентина Лаврищева" draggable="false"></div><h2>Валентин<br>Лаврищев</h2><span class="back-rule"></span></div></div>
+            <div class="cover-rear"><div class="back-design"><div class="portrait-frame"><img class="back-portrait" src="assets/portrait.png?v=2" alt="Портрет Валентина Лаврищева" draggable="false"></div><h2>Валентин<br>Лаврищев</h2><span class="back-rule"></span></div><span class="cover-anchor anchor-left" aria-hidden="true"></span><span class="cover-anchor anchor-right" aria-hidden="true"></span></div>
             <div class="page stationary left-page" id="left-page"></div>
             <div class="page stationary right-page" id="right-page"></div>
             <div class="turning-leaf" id="turning-leaf" aria-hidden="true"><div class="leaf-front page" id="leaf-front"></div><div class="leaf-back page" id="leaf-back"></div></div>
-            <button class="front-cover" id="front-cover" aria-label="Открыть книгу Родник"><span class="cover-face"><img src="assets/cover.webp" alt="Подлинная обложка тетради Родник" fetchpriority="high"></span><span class="cover-inside"></span></button>
+            <button class="front-cover" id="front-cover" aria-label="Открыть книгу Родник"><span class="cover-face"><img src="assets/cover.webp" alt="Подлинная обложка тетради Родник" fetchpriority="high"></span><span class="cover-inside"></span><span class="cover-anchor anchor-left" aria-hidden="true"></span><span class="cover-anchor anchor-right" aria-hidden="true"></span></button>
             <div class="binding" aria-hidden="true"></div>
             <div class="ribbon" aria-hidden="true"></div>
           </div>
+          <button class="rotate-cover text-button" id="rotate-cover">Оборот обложки <span>↻</span></button>
         </div>
-        <button class="rotate-cover text-button" id="rotate-cover">Оборот обложки <span>↻</span></button>
       </div>
       <div class="reader-toolbar" id="reader-toolbar" hidden>
         <button class="round-button" id="close-book" aria-label="Закрыть книгу" title="Закрыть книгу">↙</button>
