@@ -90,6 +90,8 @@ dialog{border:1px solid var(--line);background:var(--bg);color:var(--ink);paddin
   .author-name{grid-column:1;font-size:14px;margin:0}
   .intro-copy .primary-button{grid-column:2;grid-row:1 / span 2;padding:10px 15px;white-space:nowrap}
   .stage{margin-top:24px;height:calc(var(--page-h) + 30px)}
+  /* A fading gradient needs no blur filter layer, whose bounds can clip in Safari. */
+  .ground-shadow:before{inset:-24px -32px;background:radial-gradient(ellipse closest-side,#5c4e3a 0%,#5c4e3ab3 25%,#5c4e3a66 50%,#5c4e3a26 75%,#5c4e3a08 88%,#5c4e3a00 100%);filter:none}
   .experience.open{min-height:0;padding:62px 12px 0}
   .experience.open .stage{height:calc(var(--page-h) + 26px)}
   .experience.open .half-left{visibility:hidden;transition:transform var(--book-time) var(--book-ease),visibility 0s var(--book-time)}
