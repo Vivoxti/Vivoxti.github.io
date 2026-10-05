@@ -242,13 +242,24 @@ function renderSpread() {
 }
 
 function bendLeaf(duration, direction, easing) {
-  const width = ui.leaf.clientWidth;
-  const height = ui.leaf.clientHeight;
+  const size = getComputedStyle(ui.leaf);
+  const width = parseFloat(size.width);
+  const height = parseFloat(size.height);
   const count = mobile.matches ? 12 : 18;
   const segment = width / count;
   const skin = document.createElement('div');
   skin.className = 'curve-skin';
   const animations = [];
+  // Hand the nearly flat curl back to the complete sheet before it lands.
+  // Only flat faces fade; fading a 3D parent would flatten its two sides.
+  const skinOpacity = [
+    { opacity: 0 }, { opacity: 1, offset: .08 },
+    { opacity: 1, offset: .92 }, { opacity: 0 },
+  ];
+  for (const surface of [ui.front, ui.back]) {
+    animations.push(surface.animate(skinOpacity.map(frame => ({ ...frame, opacity: 1 - frame.opacity })),
+      { duration, easing, fill: 'both' }));
+  }
   for (let i = 0; i < count; i++) {
     const strip = document.createElement('div');
     strip.className = 'curve-strip';
@@ -257,7 +268,7 @@ function bendLeaf(duration, direction, easing) {
       const face = document.createElement('div');
       face.className = `curve-face curve-${side}`;
       const surface = document.createElement('div');
-      surface.className = 'curve-content page';
+      surface.className = `curve-content page ${side === 'front' ? 'right-page' : 'left-page'}`;
       surface.style.width = `${width}px`;
       surface.style.height = `${height}px`;
       surface.style.left = `${-(side === 'front' ? i : count - 1 - i) * segment}px`;
@@ -265,6 +276,7 @@ function bendLeaf(duration, direction, easing) {
       surface.querySelectorAll('.leaf-fold').forEach((fold) => fold.remove());
       face.append(surface);
       strip.append(face);
+      animations.push(face.animate(skinOpacity, { duration, easing, fill: 'both' }));
     }
     skin.append(strip);
     const x = i * segment;
@@ -433,7 +445,8 @@ function animateFloat(dt) {
   float.phase = (float.phase + dt / float.period) % 1;
   const wave = (1 - Math.cos(float.phase * Math.PI * 2)) / 2;
   const depth = wave * float.lift / 13;
-  float.element.style.translate = `0 ${(-wave * float.lift).toFixed(2)}px`;
+  // Move the composited book as one texture instead of repainting its grid at fractional positions.
+  float.element.style.transform = `translate3d(0,${(-wave * float.lift).toFixed(3)}px,0)`;
   float.shadow.style.setProperty('--breath-scale', (1 - depth * .09).toFixed(4));
   float.shadow.style.setProperty('--breath-opacity', (1 - depth * .43).toFixed(4));
 }
@@ -468,7 +481,7 @@ function updateRibbonMotion() {
   if (reducedMotion.matches) {
     ribbonLinks.forEach((link) => { link.angle = link.velocity = 0; });
     drawRibbon();
-    float.element.style.translate = '';
+    float.element.style.transform = '';
     float.shadow.style.removeProperty('--breath-scale');
     float.shadow.style.removeProperty('--breath-opacity');
   } else if (ribbonVisible && !document.hidden) ribbonFrame = requestAnimationFrame(animateRibbon);
@@ -726,13 +739,15 @@ async function animatePageTurn(direction) {
   const pages = state.data.pages;
   const old = state.cursor;
   const compact = mobile.matches;
+  ui.front.classList.add('right-page');
+  ui.back.classList.add('left-page');
   if (direction > 0) {
     renderPage(ui.front, pages[old + (compact ? 0 : 1)], old + (compact ? 0 : 1));
     renderPage(ui.back, compact ? null : pages[target], target);
     renderPage(ui.right, pages[target + (compact ? 0 : 1)], target + (compact ? 0 : 1));
   } else {
     renderPage(ui.front, pages[target + (compact ? 0 : 1)], target + (compact ? 0 : 1));
-    renderPage(ui.back, compact ? null : pages[old], old);
+    renderPage(ui.back, pages[old], old);
     if (!compact) renderPage(ui.left, pages[target], target);
     else renderPage(ui.right, pages[target], target);
   }
@@ -751,7 +766,8 @@ async function animatePageTurn(direction) {
   const bend = reducedMotion.matches || runs ? { animations: [], clear() {} } : bendLeaf(duration, direction, easingCss(easing));
   const start = direction > 0 ? 0 : -180;
   const end = direction > 0 ? -180 : 0;
-  const leafZ = parseFloat(getComputedStyle(ui.book).getPropertyValue('--page-z')) + 2;
+  // Each face sits .6px above the hinge. At both ends its visible plane matches the static page exactly.
+  const leafZ = parseFloat(getComputedStyle(ui.book).getPropertyValue('--page-z')) - .6;
   const animation = ui.leaf.animate([
     { transform: `translateZ(${leafZ}px) rotateY(${start}deg) rotateX(0deg)`, offset: 0 },
     { transform: `translateZ(${leafZ + 20}px) rotateY(${(start + end) / 2}deg) rotateX(${direction * -3}deg)`, offset: .5 },
@@ -765,29 +781,50 @@ async function animatePageTurn(direction) {
   state.turn = animation;
   retimePageTurn();
   try { await animation.finished; } catch { /* Layout changes may finish a turn early. */ }
+  // A resize can finish the hinge early; bring its skin to the same endpoint before the handoff.
+  bend.animations.forEach(item => item.finish());
   cancelAnimationFrame(active.frame);
   paging.active = null;
   state.cursor = Math.floor((active.reversed ? old : target) / step()) * step();
   const continuing = paging.target !== null && paging.target !== state.cursor;
   // Mid-run only the page under the next sheet changes; the heavy bookkeeping waits for the last landing.
-  if (continuing) refreshStaticPages();
+  const softenLanding = !continuing && !reducedMotion.matches;
+  refreshStaticPages([ui.front, ui.back], softenLanding);
+  let landing = [];
+  if (softenLanding) {
+    // The two identical planes can still sample their textures differently after a 180-degree rotation.
+    // Dissolve that last rasterization difference while both sheets are already perfectly aligned.
+    landing = [ui.front, ui.back].map(face => face.animate([{ opacity: 1 }, { opacity: 0 }],
+      { duration: 100, easing: 'ease-in-out', fill: 'forwards' }));
+    await Promise.allSettled(landing.map(item => item.finished));
+  }
   ui.leaf.classList.remove('is-turning');
+  landing.forEach(item => item.cancel());
   bend.clear();
   animation.cancel();
   state.turn = null;
   state.busy = false;
-  if (continuing) return;
-  renderSpread();
+  if (paging.target !== null && paging.target !== state.cursor) return;
+  updateNavigation();
+  saveReading();
   updateHash();
 }
 
-function refreshStaticPages() {
+function refreshStaticPages(landedFaces = [], copy = false) {
   const pages = state.data.pages;
   const wanted = mobile.matches
     ? [[ui.right, state.cursor]]
     : [[ui.left, state.cursor], [ui.right, state.cursor + 1]];
   wanted.forEach(([container, index]) => {
-    if (container.dataset.index !== String(index)) renderPage(container, pages[index], index);
+    if (container.dataset.index === String(index)) return;
+    const face = landedFaces.find(surface => surface.dataset.index === String(index));
+    if (face) {
+      // Keep the already painted handwriting and fitted text when the moving sheet becomes stationary.
+      face.querySelectorAll('.leaf-fold').forEach(fold => fold.remove());
+      container.replaceChildren(...[...face.childNodes].map(node => copy ? node.cloneNode(true) : node));
+      container.dataset.index = index;
+      container.setAttribute('aria-label', face.getAttribute('aria-label'));
+    } else renderPage(container, pages[index], index);
   });
   ui.indicator.textContent = pages.slice(state.cursor, state.cursor + step()).map(labelFor).join(' · ');
   ui.range.value = state.cursor / step();
