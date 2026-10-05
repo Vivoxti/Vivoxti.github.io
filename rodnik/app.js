@@ -123,6 +123,7 @@ function updateNavigation() {
   ui.range.max = lastCursor() / step();
   ui.range.value = state.cursor / step();
   ui.prev.disabled = state.busy || state.cursor <= 0;
+  ui.prev.classList.toggle('at-start', state.cursor <= 0);
   ui.next.disabled = state.busy || state.cursor >= lastCursor();
   ui.range.disabled = state.busy;
   $('#close-book').disabled = state.busy;
@@ -287,12 +288,18 @@ async function openBook() {
 
 async function closeBook() {
   if (state.busy) return;
+  const wasOpened = state.opened;
   state.opened = false;
   nudgeRibbon(-12);
   document.body.classList.remove('reading');
   $('#front-cover').setAttribute('aria-hidden', 'false');
   $('#front-cover').tabIndex = 0;
   ui.experience.classList.remove('open');
+  if (wasOpened && !reducedMotion.matches) {
+    $('.intro-copy').animate([{ opacity: 0 }, { opacity: 1 }], {
+      duration: 300, delay: 70, easing: 'ease-out', fill: 'backwards',
+    });
+  }
   ui.book.classList.remove('show-back');
   ui.toolbar.hidden = true;
   ui.navigation.hidden = true;
@@ -384,16 +391,46 @@ async function goToId(id) {
   updateHash(id);
 }
 
-function setMode(mode) {
+async function fadePageContent(from, to, duration) {
+  const surfaces = [ui.left, ui.right];
+  if ($('#zoom-dialog').open) surfaces.push($('#zoom-paper'));
+  const animations = surfaces.flatMap((surface) => [...surface.querySelectorAll('.ink-image, .page-inner, .page-number-image, .page-number')]
+    .map((element) => element.animate([{ opacity: from }, { opacity: to }], {
+      duration, easing: 'ease-in-out', fill: 'both',
+    })));
+  await Promise.allSettled(animations.map((animation) => animation.finished));
+  return () => animations.forEach((animation) => animation.cancel());
+}
+
+async function setMode(mode) {
   if (state.busy) return;
-  state.mode = mode;
+  const animate = state.opened && mode !== state.mode && !reducedMotion.matches;
+  $('.mode-switch').classList.toggle('is-text', mode === 'text');
   for (const name of ['original', 'text']) {
     const button = $(`#mode-${name}`);
     button.classList.toggle('active', name === mode);
     button.setAttribute('aria-pressed', String(name === mode));
   }
-  renderSpread();
-  if ($('#zoom-dialog').open) renderZoom();
+  let clearFade = () => {};
+  if (animate) {
+    state.busy = true;
+    document.body.classList.add('mode-changing');
+  }
+  try {
+    if (animate) clearFade = await fadePageContent(1, 0, 120);
+    state.mode = mode;
+    renderSpread();
+    if ($('#zoom-dialog').open) renderZoom();
+    clearFade();
+    if (animate) clearFade = await fadePageContent(0, 1, 230);
+  } finally {
+    clearFade();
+    if (animate) {
+      state.busy = false;
+      updateNavigation();
+      document.body.classList.remove('mode-changing');
+    }
+  }
 }
 
 const closingDialogs = new WeakMap();
@@ -493,6 +530,14 @@ function openZoom(index) {
 }
 
 function bindEvents() {
+  $('.brand').addEventListener('click', async (event) => {
+    if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    if (!state.data) return;
+    while (state.busy) await pause(60);
+    await closeBook();
+    window.scrollTo({ top: 0, behavior: reducedMotion.matches ? 'instant' : 'smooth' });
+  });
   $('#open-button').addEventListener('click', openBook);
   $('#front-cover').addEventListener('click', openBook);
   $('#rotate-cover').addEventListener('click', () => {

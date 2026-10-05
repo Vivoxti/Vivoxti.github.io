@@ -29,3 +29,6 @@ dialog{border:1px solid var(--line);background:var(--bg);color:var(--ink);paddin
 #about-button span{font-size:15px;vertical-align:middle;font-family:"Segoe UI Emoji","Apple Color Emoji",sans-serif}
 .toc-leader{height:2px;border:0;background-image:radial-gradient(circle,#77694db3 .8px,transparent 1px);background-size:5px 2px;background-repeat:repeat-x}
 .zoom-scroll{scrollbar-gutter:stable}.zoom-paper.flow-text{width:100%!important;max-width:100%}
+.mode-switch{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));isolation:isolate}.mode-switch:before{content:"";position:absolute;left:4px;top:4px;bottom:4px;width:calc((100% - 8px)/2);border-radius:22px;background:#3f4939;box-shadow:0 2px 6px #3f49391c;transition:transform .35s cubic-bezier(.22,.75,.22,1)}.mode-switch.is-text:before{transform:translateX(100%)}.mode-switch button{position:relative;z-index:1;white-space:nowrap;transition:color .3s}.mode-switch button.active{background:transparent;box-shadow:none}.mode-switch button:disabled{opacity:1}
+.mode-changing #reader-toolbar button:disabled,.mode-changing #next-page:disabled,.mode-changing #prev-page:not(.at-start):disabled{opacity:1}
+.mode-switch{width:166px;flex-shrink:0}@media(max-width:700px){.mode-switch{width:136px}}
