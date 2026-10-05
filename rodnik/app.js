@@ -28,7 +28,7 @@ function makePage(page, mode = state.mode) {
   if (page.kind === 'title') {
     content = '<div class="page-title-design"><span class="title-ornament">✳</span><p class="eyebrow">РУКОПИСНАЯ КНИГА СТИХОВ</p><h2>Родник</h2><h3>Валентин Лаврищев</h3><blockquote>Я мысли те лишь излагал,<br>Что из души фонтаном били.</blockquote><small>СОХРАНЕНО С ЛЮБОВЬЮ</small></div>';
   } else if (page.kind === 'back') {
-    content = '<div class="page-title-design back-page-design"><img class="back-portrait" src="assets/portrait.png" alt="Портрет Валентина Лаврищева" draggable="false"><h2 style="font-size:32px;letter-spacing:-1px">Валентин<br>Лаврищев</h2><blockquote>Его слова. Его почерк.<br>Наша память.</blockquote><small>СЕМЕЙНЫЙ АРХИВ</small></div>';
+    content = '<div class="page-title-design back-page-design"><div class="portrait-frame"><img class="back-portrait" src="assets/portrait.png" alt="Портрет Валентина Лаврищева" draggable="false"></div><h2 style="font-size:32px;letter-spacing:-1px">Валентин<br>Лаврищев</h2><blockquote>Его слова. Его почерк.<br>Наша память.</blockquote><small>СЕМЕЙНЫЙ АРХИВ</small></div>';
   } else if (page.kind === 'missing') {
     content = `<div class="missing-page"><span class="missing-number">${page.number}</span><p>Эта страница<br>ещё не найдена.</p><small>Оставили для неё место в книге.</small></div>`;
   } else {
@@ -168,6 +168,21 @@ function bendLeaf(duration, direction) {
   };
 }
 
+let coverAlignmentFrame;
+function alignCoverButton() {
+  cancelAnimationFrame(coverAlignmentFrame);
+  const until = performance.now() + (reducedMotion.matches ? 50 : 1450);
+  const align = () => {
+    if (state.opened) return;
+    const cover = ui.book.classList.contains('show-back') ? $('.cover-rear') : $('#front-cover');
+    const bounds = cover.getBoundingClientRect();
+    const stage = ui.stage.getBoundingClientRect();
+    ui.stage.style.setProperty('--cover-center', `${bounds.left + bounds.width / 2 - stage.left}px`);
+    if (performance.now() < until) coverAlignmentFrame = requestAnimationFrame(align);
+  };
+  coverAlignmentFrame = requestAnimationFrame(align);
+}
+
 async function openBook() {
   if (!state.data || state.opened || state.busy) return;
   if (ui.book.classList.contains('show-back')) {
@@ -201,6 +216,8 @@ async function closeBook() {
   renderSpread();
   history.replaceState(null, '', location.pathname + location.search);
   $('#open-button').focus({ preventScroll: true });
+  $('#rotate-cover').innerHTML = 'Оборот обложки <span>↻</span>';
+  alignCoverButton();
 }
 
 async function turnPage(direction) {
@@ -358,6 +375,7 @@ function bindEvents() {
   $('#rotate-cover').addEventListener('click', () => {
     ui.book.classList.toggle('show-back');
     $('#rotate-cover').innerHTML = ui.book.classList.contains('show-back') ? 'Лицевая обложка <span>↻</span>' : 'Оборот обложки <span>↻</span>';
+    alignCoverButton();
   });
   $('#close-book').addEventListener('click', closeBook);
   ui.prev.addEventListener('click', () => turnPage(-1));
@@ -458,6 +476,7 @@ function bindEvents() {
     }, 80);
   };
   window.addEventListener('resize', resize);
+  new ResizeObserver(alignCoverButton).observe(ui.stage);
   mobile.addEventListener('change', resize);
   window.addEventListener('hashchange', () => {
     const match = location.hash.match(/^#page=(.+)$/);
