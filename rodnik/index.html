@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f2eee5">
+  <meta name="description" content="Родник — рукописная книга стихов Валентина Лаврищева. Семейный архив, сохранённый с любовью.">
+  <meta property="og:title" content="Родник · Валентин Лаврищев">
+  <meta property="og:description" content="Стихи моего деда. Листайте настоящую рукопись или читайте её расшифровку.">
+  <meta property="og:image" content="https://vivoxti.github.io/rodnik/assets/cover.webp">
+  <title>Родник · Валентин Лаврищев</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/Neucha.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="./" aria-label="Родник, на главную"><span class="brand-symbol">р.</span><span>РОДНИК<small>СЕМЕЙНЫЙ АРХИВ</small></span></a>
+    <nav aria-label="Основная навигация"><button class="text-button" id="about-button">О книге <span>↗</span></button><button class="text-button" id="contents-button">Содержание <span>☰</span></button></nav>
+  </header>
+  <main>
+    <section class="experience" id="experience" aria-label="Интерактивная книга">
+      <div class="intro-copy">
+        <p class="eyebrow"><span class="tiny-line"></span> РУКОПИСЬ, КОТОРАЯ ЖИВЁТ</p>
+        <h1>Родник<span class="title-dot">.</span></h1>
+        <p class="author-name">Валентин Лаврищев</p>
+        <p class="intro-description">Стихи моего деда.<br>Его слова. Его почерк.<br>История, которую хочется сохранить.</p>
+        <button class="primary-button" id="open-button">Открыть книгу <span>↗</span></button>
+        <p class="intro-note">ПОЛИСТАЙТЕ. ПОБУДЬТЕ МЕЖДУ СТРОК.</p>
+      </div>
+      <div class="stage" id="stage">
+        <div class="ground-shadow"></div>
+        <div class="book-float" id="book-float">
+          <div class="book" id="book">
+            <div class="cover-bottom"></div>
+            <div class="paper-stack stack-right"></div>
+            <div class="paper-stack stack-left"></div>
+            <div class="book-spine"><span>РОДНИК · В. ЛАВРИЩЕВ</span></div>
+            <div class="cover-rear"><div class="back-design"><span class="back-mark">р.</span><p>Книга стихов<br>моего деда</p><h2>Валентин<br>Лаврищев</h2><span class="back-rule"></span><small>СОХРАНЕНО С ЛЮБОВЬЮ</small></div></div>
+            <div class="page stationary left-page" id="left-page"></div>
+            <div class="page stationary right-page" id="right-page"></div>
+            <div class="turning-leaf" id="turning-leaf" aria-hidden="true"><div class="leaf-front page" id="leaf-front"></div><div class="leaf-back page" id="leaf-back"></div></div>
+            <button class="front-cover" id="front-cover" aria-label="Открыть книгу Родник"><span class="cover-face"><img src="assets/cover.webp" alt="Подлинная обложка тетради Родник" fetchpriority="high"></span><span class="cover-inside"></span></button>
+            <div class="binding" aria-hidden="true"></div>
+            <div class="ribbon" aria-hidden="true"></div>
+          </div>
+        </div>
+        <button class="rotate-cover text-button" id="rotate-cover">Оборот обложки <span>↻</span></button>
+        <p class="gesture-hint" id="gesture-hint">НАЖМИТЕ НА ОБЛОЖКУ, ЧТОБЫ ОТКРЫТЬ</p>
+      </div>
+      <div class="reader-toolbar" id="reader-toolbar" hidden>
+        <button class="round-button" id="close-book" aria-label="Закрыть книгу" title="Закрыть книгу">↙</button>
+        <div class="mode-switch" role="group" aria-label="Вид страниц"><button id="mode-original" class="active" aria-pressed="true">Почерк</button><button id="mode-text" aria-pressed="false">Текст</button></div>
+        <button class="round-button" id="zoom-button" aria-label="Увеличить страницу" title="Читать крупнее"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5M7 10h6M10 7v6"/></svg></button>
+      </div>
+    </section>
+    <section class="reader-navigation" id="reader-navigation" aria-label="Перелистывание страниц" hidden>
+      <div class="navigation-row"><button class="round-button" id="prev-page" aria-label="Предыдущие страницы">←</button><button class="page-indicator" id="page-indicator" title="Перейти к странице">Начало</button><button class="round-button" id="next-page" aria-label="Следующие страницы">→</button></div>
+      <input id="page-range" type="range" min="0" max="1" value="0" aria-label="Положение в книге">
+      <p class="reading-hint">ЛИСТАЙТЕ СТРЕЛКАМИ <span>·</span> ПОТЯНИТЕ СТРАНИЦУ <span>·</span> НАЖМИТЕ НА ТЕКСТ ДЛЯ УВЕЛИЧЕНИЯ</p>
+    </section>
+    <footer class="site-footer"><span>СЛОВА ОСТАЮТСЯ.</span><span id="footer-detail">Рукописная книга · семейный архив</span><span class="footer-flower" aria-hidden="true">✳</span></footer>
+  </main>
+  <dialog id="contents-dialog" class="drawer"><div class="dialog-header"><div><p class="eyebrow">ПО СТРАНИЦАМ ПАМЯТИ</p><h2>Содержание<span>.</span></h2></div><button class="round-button" data-close aria-label="Закрыть содержание">×</button></div><label class="search-field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg><input id="search-input" type="search" placeholder="Название, строка или номер страницы" aria-label="Поиск по книге"></label><div class="contents-list" id="contents-list"></div><p class="drawer-note">Нумерация сохранена по рукописи.</p></dialog>
+  <dialog id="about-dialog" class="about-dialog"><button class="round-button dialog-close" data-close aria-label="Закрыть информацию">×</button><p class="eyebrow">СЕМЕЙНЫЙ АРХИВ</p><h2>Слова,<br>которые остались<span>.</span></h2><p>Это книга стихов моего деда — <strong>Валентина Лаврищева</strong>. Он записывал их от руки в тетрадь «Родник»: о любви, семье, разлуке, работе и родных местах.</p><p>Здесь можно увидеть его настоящий почерк или прочитать расшифровку. Строки, строфы и авторские написания сохранены.</p><blockquote>«Я мысли те лишь излагал,<br>Что из души фонтаном били».</blockquote><p class="archive-note" id="archive-note"></p></dialog>
+  <dialog id="zoom-dialog" class="zoom-dialog"><div class="zoom-toolbar"><span id="zoom-title">Страница</span><div><button class="round-button" id="zoom-minus" aria-label="Уменьшить">−</button><button class="round-button" id="zoom-plus" aria-label="Увеличить">+</button><button class="round-button" data-close aria-label="Закрыть увеличение">×</button></div></div><div class="zoom-scroll" id="zoom-scroll"><div class="zoom-paper page" id="zoom-paper"></div></div><div class="zoom-navigation"><button class="text-button" id="zoom-prev">← Назад</button><span>ПОЧЕРК И СЛОВА ОРИГИНАЛА</span><button class="text-button" id="zoom-next">Далее →</button></div></dialog>
+  <dialog id="jump-dialog" class="jump-dialog"><button class="round-button dialog-close" data-close aria-label="Закрыть переход">×</button><p class="eyebrow">НУЖНАЯ СТРАНИЦА</p><h2>Куда перелистнуть?</h2><form id="jump-form"><label for="jump-input">Номер страницы, от 3 до 164</label><div><input id="jump-input" type="number" min="3" max="164" required inputmode="numeric"><button class="primary-button" type="submit">Перейти →</button></div></form></dialog>
+  <p id="announcement" class="sr-only" role="status" aria-live="polite"></p>
+  <noscript><p class="noscript">Для перелистывания включите JavaScript в браузере.</p></noscript>
+</body>
+</html>
