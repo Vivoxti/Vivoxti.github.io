@@ -241,7 +241,7 @@ function renderSpread() {
   saveReading();
 }
 
-function bendLeaf(duration, direction) {
+function bendLeaf(duration, direction, easing) {
   const width = ui.leaf.clientWidth;
   const height = ui.leaf.clientHeight;
   const count = mobile.matches ? 12 : 18;
@@ -278,7 +278,7 @@ function bendLeaf(duration, direction) {
       { transform: flat },
       { transform: `translate3d(${curvedX}px,0,${curvedZ}px) rotateY(${-theta * 180 / Math.PI}deg)`, offset: .5 },
       { transform: flat },
-    ], { duration, easing: 'cubic-bezier(.25,.65,.25,1)', fill: 'both' }));
+    ], { duration, easing, fill: 'both' }));
   }
   ui.leaf.append(skin);
   ui.leaf.classList.add('curving');
@@ -583,6 +583,14 @@ async function showBackCover() {
 
 const readingPosition = () => state.opened ? state.cursor : backShowing() ? lastCursor() : -step();
 
+// Restartable click feedback: a ring spreads from the button and its arrow nudges the way the page turns.
+function pulseButton(button) {
+  if (button.disabled || reducedMotion.matches) return;
+  button.classList.remove('pulse');
+  void button.offsetWidth;
+  button.classList.add('pulse');
+}
+
 // Keep accepting input while a sheet moves. Opposite input first unwinds queued turns.
 function turnPage(direction) {
   if (!state.data) return;
@@ -596,6 +604,50 @@ function turnPage(direction) {
   runPageTurns();
 }
 
+// Sheets of a quick run fly at constant speed and land hard, so the run never stalls between sheets.
+// Only the last sheet of a run decelerates into the stack.
+const TURN_EASINGS = {
+  settle: [.25, .65, .25, 1],
+  flow: [.1, .1, .9, .9],
+  rewind: [.42, 0, .58, 1],
+};
+const bezierAt = (points, t) => {
+  const [x1, y1, x2, y2] = points;
+  const axis = (a, b, u) => 3 * (1 - u) * (1 - u) * u * a + 3 * (1 - u) * u * u * b + u * u * u;
+  let low = 0;
+  let high = 1;
+  for (let i = 0; i < 24; i++) {
+    const middle = (low + high) / 2;
+    if (axis(x1, x2, middle) < t) low = middle; else high = middle;
+  }
+  return axis(y1, y2, (low + high) / 2);
+};
+const bezierInverse = (points, progress) => {
+  let low = 0;
+  let high = 1;
+  for (let i = 0; i < 24; i++) {
+    const middle = (low + high) / 2;
+    if (bezierAt(points, middle) < progress) low = middle; else high = middle;
+  }
+  return (low + high) / 2;
+};
+const easingCss = (name) => `cubic-bezier(${TURN_EASINGS[name].join(',')})`;
+
+// Swap the easing of a sheet in flight without moving it, so the speed changes but the position never jumps.
+function setTurnEasing(active, name) {
+  if (active.easing === name) return;
+  const first = active.animations[0];
+  const duration = first.effect.getTiming().duration;
+  const time = Math.max(0, Math.min(duration, Number(first.currentTime) || 0));
+  const progress = bezierAt(TURN_EASINGS[active.easing], time / duration);
+  const nextTime = bezierInverse(TURN_EASINGS[name], progress) * duration;
+  active.easing = name;
+  active.animations.forEach((animation) => {
+    animation.effect.updateTiming({ easing: easingCss(name) });
+    animation.currentTime = nextTime;
+  });
+}
+
 function retimePageTurn() {
   const active = paging.active;
   if (!active) return;
@@ -603,7 +655,8 @@ function retimePageTurn() {
   if (paging.target !== null) active.reversed = (paging.target - active.old) * active.direction <= 0;
   const landed = active.reversed ? active.old : active.target;
   const remaining = paging.target === null ? 0 : Math.abs(paging.target - landed) / step();
-  active.desiredSpeed = remaining ? Math.min(3.4, 1.6 + Math.sqrt(remaining) * .45) : active.reversed ? 1.5 : 1;
+  active.desiredSpeed = remaining ? Math.min(5, 1.7 + Math.sqrt(remaining) * .6) : active.reversed ? 1.5 : 1;
+  if (!reducedMotion.matches) setTurnEasing(active, active.reversed ? 'rewind' : remaining ? 'flow' : 'settle');
   applyTurnSpeed(active);
   if (!reducedMotion.matches) easeTurnSpeed(active);
 }
@@ -624,7 +677,7 @@ function easeTurnSpeed(active) {
     if (paging.active !== active) return;
     const dt = Math.max(0, Math.min(50, now - previous));
     previous = now;
-    active.speed += (active.desiredSpeed - active.speed) * (1 - Math.exp(-dt / 85));
+    active.speed += (active.desiredSpeed - active.speed) * (1 - Math.exp(-dt / 60));
     const settled = Math.abs(active.desiredSpeed - active.speed) < .01;
     if (settled) active.speed = active.desiredSpeed;
     paging.speed = active.speed;
@@ -692,7 +745,10 @@ async function animatePageTurn(direction) {
   fitPage(ui.front);
   fitPage(ui.back);
   const duration = reducedMotion.matches ? 1 : 950;
-  const bend = reducedMotion.matches ? { animations: [], clear() {} } : bendLeaf(duration, direction);
+  // A run of sheets skips the curl: dozens of image strips per sheet would stall the next one.
+  const runs = paging.target !== null && Math.abs(paging.target - target) > 0 && Math.sign(paging.target - target) === direction;
+  const easing = runs ? 'flow' : 'settle';
+  const bend = reducedMotion.matches || runs ? { animations: [], clear() {} } : bendLeaf(duration, direction, easingCss(easing));
   const start = direction > 0 ? 0 : -180;
   const end = direction > 0 ? -180 : 0;
   const leafZ = parseFloat(getComputedStyle(ui.book).getPropertyValue('--page-z')) + 2;
@@ -700,11 +756,11 @@ async function animatePageTurn(direction) {
     { transform: `translateZ(${leafZ}px) rotateY(${start}deg) rotateX(0deg)`, offset: 0 },
     { transform: `translateZ(${leafZ + 20}px) rotateY(${(start + end) / 2}deg) rotateX(${direction * -3}deg)`, offset: .5 },
     { transform: `translateZ(${leafZ}px) rotateY(${end}deg) rotateX(0deg)`, offset: 1 },
-  ], { duration, easing: 'cubic-bezier(.25,.65,.25,1)', fill: 'forwards' });
+  ], { duration, easing: easingCss(easing), fill: 'forwards' });
   const animations = [animation, ...bend.animations];
   const startTime = document.timeline.currentTime;
   animations.forEach((item) => { item.startTime = startTime; });
-  const active = { old, target, direction, animations, reversed: false, speed: paging.speed, desiredSpeed: 1, frame: null };
+  const active = { old, target, direction, animations, easing, reversed: false, speed: paging.speed, desiredSpeed: 1, frame: null };
   paging.active = active;
   state.turn = animation;
   retimePageTurn();
@@ -712,13 +768,29 @@ async function animatePageTurn(direction) {
   cancelAnimationFrame(active.frame);
   paging.active = null;
   state.cursor = Math.floor((active.reversed ? old : target) / step()) * step();
+  const continuing = paging.target !== null && paging.target !== state.cursor;
+  // Mid-run only the page under the next sheet changes; the heavy bookkeeping waits for the last landing.
+  if (continuing) refreshStaticPages();
   ui.leaf.classList.remove('is-turning');
   bend.clear();
   animation.cancel();
   state.turn = null;
   state.busy = false;
+  if (continuing) return;
   renderSpread();
   updateHash();
+}
+
+function refreshStaticPages() {
+  const pages = state.data.pages;
+  const wanted = mobile.matches
+    ? [[ui.right, state.cursor]]
+    : [[ui.left, state.cursor], [ui.right, state.cursor + 1]];
+  wanted.forEach(([container, index]) => {
+    if (container.dataset.index !== String(index)) renderPage(container, pages[index], index);
+  });
+  ui.indicator.textContent = pages.slice(state.cursor, state.cursor + step()).map(labelFor).join(' · ');
+  ui.range.value = state.cursor / step();
 }
 
 function updateHash(id) {
@@ -927,8 +999,11 @@ function bindEvents() {
     wheelTotal = 0;
     turnPage(direction);
   }, { passive: false });
-  ui.prev.addEventListener('click', () => turnPage(-1));
-  ui.next.addEventListener('click', () => turnPage(1));
+  [ui.prev, ui.next].forEach((button) => button.addEventListener('animationend', (event) => {
+    if (event.animationName === 'button-ring') button.classList.remove('pulse');
+  }));
+  ui.prev.addEventListener('click', () => { pulseButton(ui.prev); turnPage(-1); });
+  ui.next.addEventListener('click', () => { pulseButton(ui.next); turnPage(1); });
   $('#mode-original').addEventListener('click', () => setMode('original'));
   $('#mode-text').addEventListener('click', () => setMode('text'));
   $('#contents-button').addEventListener('click', () => {
@@ -992,7 +1067,9 @@ function bindEvents() {
     if (['INPUT', 'TEXTAREA'].includes(event.target.tagName) || document.querySelector('dialog[open]')) return;
     if ((state.opened || paging.running) && ['ArrowRight', 'ArrowLeft'].includes(event.key)) {
       event.preventDefault();
-      turnPage(event.key === 'ArrowRight' ? 1 : -1);
+      const direction = event.key === 'ArrowRight' ? 1 : -1;
+      pulseButton(direction > 0 ? ui.next : ui.prev);
+      turnPage(direction);
     } else if (event.key === 'Escape' && state.opened) closeBook();
   });
   let pointer = null;
