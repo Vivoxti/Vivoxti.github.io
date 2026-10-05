@@ -71,6 +71,9 @@ function makePage(page, mode = state.mode) {
 
 // One font size per sheet size, shared by every poem and by every contents sheet.
 const fittedSizes = new Map();
+const fittedSpacing = new Map();
+const POEM_LINE_HEIGHT = 1.3;
+const POEM_MAX_SPACING = .12;
 function fittedFontSize(kind, width, height) {
   const key = `${kind}:${width}x${height}`;
   if (!width || !height || !state.data) return 14;
@@ -87,12 +90,13 @@ function fittedFontSize(kind, width, height) {
     ];
   };
   let size = Infinity;
+  const poems = [];
   for (const page of state.data.pages) {
     if (page.kind !== kind || !page.text?.trim()) continue;
     probe.innerHTML = makeTranscript(page);
     const inner = probe.firstElementChild;
     const text = inner.firstElementChild;
-    text.style.lineHeight = '1.4';
+    text.style.lineHeight = kind === 'contents' ? '1.4' : String(POEM_LINE_HEIGHT);
     if (kind === 'contents') {
       inner.classList.add('contents-sheet');
       // Titles wrap and leaders stretch, so search for the largest size that fits.
@@ -113,11 +117,39 @@ function fittedFontSize(kind, width, height) {
       text.style.maxWidth = 'none';
       const bounds = text.getBoundingClientRect();
       const [availableWidth, availableHeight] = content(inner);
-      size = Math.min(size, reference * availableWidth / bounds.width, reference * availableHeight / bounds.height);
+      size = Math.min(size, reference * availableHeight / bounds.height);
+      poems.push({ reference, availableWidth, naturalWidth: bounds.width, longest: Math.max(...page.text.split('\n').map((line) => line.length)) });
     }
   }
-  probe.remove();
   size = Number.isFinite(size) ? Math.floor(size * .98 * 20) / 20 : 14;
+  if (kind === 'page') {
+    // Height limits the size, so spend the spare width on letter spacing, up to what the widest poem allows.
+    let spacing = POEM_MAX_SPACING;
+    for (const poem of poems) {
+      const room = poem.availableWidth / size - poem.naturalWidth / poem.reference;
+      spacing = Math.min(spacing, room / poem.longest);
+    }
+    // A poem that cannot take even the natural width still has to fit.
+    for (const poem of poems) size = Math.min(size, Math.floor(poem.reference * poem.availableWidth / poem.naturalWidth * 20) / 20);
+    spacing = Math.max(0, spacing * .9);
+    // Small sizes round glyph advances, so confirm with real measurements and back off until every poem fits.
+    for (let attempt = 0; attempt < 8 && spacing > 0; attempt++) {
+      let fits = true;
+      for (const page of state.data.pages) {
+        if (page.kind !== 'page' || !page.text?.trim()) continue;
+        probe.innerHTML = makeTranscript(page);
+        const inner = probe.firstElementChild;
+        const text = inner.firstElementChild;
+        Object.assign(text.style, { fontSize: `${size}px`, lineHeight: String(POEM_LINE_HEIGHT), letterSpacing: `${spacing}em`, whiteSpace: 'pre', maxWidth: 'none' });
+        // Line breaking measures slightly differently from layout, so keep a margin at the page edge and by the spine.
+        if (text.getBoundingClientRect().width > content(inner)[0] * .94) { fits = false; break; }
+      }
+      if (fits) break;
+      spacing = attempt === 7 ? 0 : spacing * .88;
+    }
+    fittedSpacing.set(key, Math.floor(spacing * 1000) / 1000);
+  }
+  probe.remove();
   fittedSizes.set(key, size);
   return size;
 }
@@ -133,11 +165,14 @@ function fitPage(container) {
   if (!text) return;
   if (container.classList.contains('flow-text')) {
     text.style.fontSize = `${22.4 * state.zoom}px`;
+    if (text.classList.contains('page-text')) text.style.letterSpacing = '.06em';
     return;
   }
   const isContents = text.classList.contains('book-contents');
-  text.style.fontSize = `${fittedFontSize(isContents ? 'contents' : 'page', width, container.clientHeight)}px`;
-  text.style.lineHeight = '1.4';
+  const kind = isContents ? 'contents' : 'page';
+  text.style.fontSize = `${fittedFontSize(kind, width, container.clientHeight)}px`;
+  text.style.lineHeight = isContents ? '1.4' : String(POEM_LINE_HEIGHT);
+  if (!isContents) text.style.letterSpacing = `${fittedSpacing.get(`${kind}:${width}x${container.clientHeight}`) ?? 0}em`;
   if (isContents) {
     text.parentElement.classList.add('contents-sheet');
     return;
@@ -146,7 +181,11 @@ function fitPage(container) {
   text.style.margin = '0';
   const desiredX = width * Number(inner.dataset.centerX) / 100 - inner.offsetLeft - text.offsetWidth / 2;
   const desiredY = container.clientHeight * Number(inner.dataset.centerY) / 100 - inner.offsetTop - text.offsetHeight / 2;
-  text.style.marginLeft = `${Math.max(0, Math.min(inner.clientWidth - text.offsetWidth, desiredX))}px`;
+  const inset = getComputedStyle(inner);
+  const contentWidth = inner.clientWidth - parseFloat(inset.paddingLeft) - parseFloat(inset.paddingRight);
+  // Keep a margin at the page edge, which also stops rounding from wrapping the longest line.
+  const freeWidth = contentWidth - text.offsetWidth - Math.max(3, contentWidth * .03);
+  text.style.marginLeft = `${Math.max(0, Math.min(freeWidth, desiredX))}px`;
   text.style.marginTop = `${Math.max(0, Math.min(inner.clientHeight - text.offsetHeight, desiredY))}px`;
 }
 
@@ -923,7 +962,7 @@ function bindEvents() {
     const match = location.hash.match(/^#page=(.+)$/);
     if (match && state.data) goToId(decodeURIComponent(match[1]));
   });
-  document.fonts.ready.then(() => { fittedSizes.clear(); renderSpread(); if ($('#zoom-dialog').open) renderZoom(); });
+  document.fonts.ready.then(() => { fittedSizes.clear(); fittedSpacing.clear(); renderSpread(); if ($('#zoom-dialog').open) renderZoom(); });
 }
 
 async function init() {
