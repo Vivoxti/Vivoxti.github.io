@@ -11,6 +11,8 @@ const ui = {
 const mobile = matchMedia('(max-width: 700px)');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const state = { data: null, cursor: 0, mode: 'original', opened: false, busy: false, zoomIndex: 0, zoom: 1, turn: null };
+const paging = { target: null, running: false, active: null, speed: 1 };
+let jumpSequence = 0;
 const step = () => mobile.matches ? 1 : 2;
 const escapeHtml = (text) => String(text).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const normalize = (text) => text.toLocaleLowerCase('ru').replace(/ё/g, 'е');
@@ -207,17 +209,19 @@ function updateNavigation() {
   ui.indicator.textContent = labels.join(' · ');
   ui.range.max = lastCursor() / step();
   ui.range.value = state.cursor / step();
-  ui.prev.disabled = state.busy || state.cursor <= 0;
-  ui.prev.classList.toggle('at-start', state.cursor <= 0);
-  ui.next.disabled = state.busy || state.cursor >= lastCursor();
-  ui.range.disabled = state.busy;
+  const requested = paging.target ?? state.cursor;
+  ui.prev.disabled = requested <= 0;
+  ui.prev.classList.toggle('at-start', requested <= 0);
+  ui.next.disabled = requested >= lastCursor();
+  ui.range.disabled = false;
   $('#close-book').disabled = state.busy;
   $('#zoom-button').disabled = state.busy;
   $('#mode-original').disabled = state.busy;
   $('#mode-text').disabled = state.busy;
   ui.announcement.textContent = `Открыто: ${visible.map((p) => p.number ? `страница ${p.number}` : labelFor(p)).join(', ')}. ${state.mode === 'original' ? 'Оригинальный почерк' : 'Расшифрованный текст'}.`;
-  const preload = pages.slice(Math.max(0, state.cursor - 2), state.cursor + 5);
-  preload.forEach((p) => { if (p.image) { const img = new Image(); img.src = p.image; } });
+  const ahead = paging.target === null ? state.cursor : state.cursor + Math.sign(paging.target - state.cursor) * Math.min(12, Math.abs(paging.target - state.cursor));
+  const preload = pages.slice(Math.max(0, Math.min(state.cursor - 2, ahead)), Math.max(state.cursor + 5, ahead + step()));
+  preload.forEach((p) => [p.image, p.numberImage].filter(Boolean).forEach((source) => { const img = new Image(); img.src = source; }));
 }
 
 function renderSpread() {
@@ -278,11 +282,11 @@ function bendLeaf(duration, direction) {
   }
   ui.leaf.append(skin);
   ui.leaf.classList.add('curving');
-  return () => {
+  return { animations, clear() {
     animations.forEach((animation) => animation.cancel());
     skin.remove();
     ui.leaf.classList.remove('curving');
-  };
+  } };
 }
 
 let coverAlignmentFrame;
@@ -577,7 +581,88 @@ async function showBackCover() {
   ui.announcement.textContent = 'Задняя обложка книги.';
 }
 
-async function turnPage(direction) {
+const readingPosition = () => state.opened ? state.cursor : backShowing() ? lastCursor() : -step();
+
+// Keep accepting input while a sheet moves. Opposite input first unwinds queued turns.
+function turnPage(direction) {
+  if (!state.data) return;
+  const current = paging.target ?? readingPosition();
+  const target = Math.max(-step(), Math.min(lastCursor(), current + direction * step()));
+  if (target === current) return;
+  jumpSequence++;
+  paging.target = target;
+  retimePageTurn();
+  updateNavigation();
+  runPageTurns();
+}
+
+function retimePageTurn() {
+  const active = paging.active;
+  if (!active) return;
+  // Reverse the same physical sheet when the reader changes their mind mid-turn.
+  if (paging.target !== null) active.reversed = (paging.target - active.old) * active.direction <= 0;
+  const landed = active.reversed ? active.old : active.target;
+  const remaining = paging.target === null ? 0 : Math.abs(paging.target - landed) / step();
+  active.desiredSpeed = remaining ? Math.min(3.4, 1.6 + Math.sqrt(remaining) * .45) : active.reversed ? 1.5 : 1;
+  applyTurnSpeed(active);
+  if (!reducedMotion.matches) easeTurnSpeed(active);
+}
+
+function applyTurnSpeed(active) {
+  const sign = active.reversed ? -1 : 1;
+  const rate = sign * active.speed;
+  active.animations.forEach((animation) => {
+    if (Math.abs(animation.playbackRate - rate) > .002) animation.updatePlaybackRate(rate);
+  });
+}
+
+function easeTurnSpeed(active) {
+  if (active.frame !== null || Math.abs(active.desiredSpeed - active.speed) < .002) return;
+  let previous = performance.now();
+  const tick = (now) => {
+    active.frame = null;
+    if (paging.active !== active) return;
+    const dt = Math.max(0, Math.min(50, now - previous));
+    previous = now;
+    active.speed += (active.desiredSpeed - active.speed) * (1 - Math.exp(-dt / 85));
+    const settled = Math.abs(active.desiredSpeed - active.speed) < .01;
+    if (settled) active.speed = active.desiredSpeed;
+    paging.speed = active.speed;
+    applyTurnSpeed(active);
+    if (!settled) active.frame = requestAnimationFrame(tick);
+  };
+  active.frame = requestAnimationFrame(tick);
+}
+
+async function runPageTurns() {
+  if (paging.running) return;
+  paging.running = true;
+  try {
+    while (paging.target !== null) {
+      if (state.busy) { await pause(16); continue; }
+      const current = readingPosition();
+      if (paging.target === current) break;
+      if (!state.opened) {
+        state.cursor = backShowing() ? lastReadingCursor() : 0;
+        await openBook({ keepCursor: true });
+        updateHash();
+        continue;
+      }
+      const direction = Math.sign(paging.target - current);
+      const next = current + direction * step();
+      if (next < 0) await closeBook();
+      else if (next >= backIndex()) await showBackCover();
+      else await animatePageTurn(direction);
+    }
+  } finally {
+    paging.target = null;
+    paging.running = false;
+    paging.speed = 1;
+    updateNavigation();
+  }
+}
+
+async function animatePageTurn(direction) {
   if (!state.opened || state.busy) return;
   const target = Math.max(0, Math.min(lastCursor(), state.cursor + direction * step()));
   if (target === state.cursor) return;
@@ -607,7 +692,7 @@ async function turnPage(direction) {
   fitPage(ui.front);
   fitPage(ui.back);
   const duration = reducedMotion.matches ? 1 : 950;
-  const clearBend = reducedMotion.matches ? () => {} : bendLeaf(duration, direction);
+  const bend = reducedMotion.matches ? { animations: [], clear() {} } : bendLeaf(duration, direction);
   const start = direction > 0 ? 0 : -180;
   const end = direction > 0 ? -180 : 0;
   const leafZ = parseFloat(getComputedStyle(ui.book).getPropertyValue('--page-z')) + 2;
@@ -616,11 +701,19 @@ async function turnPage(direction) {
     { transform: `translateZ(${leafZ + 20}px) rotateY(${(start + end) / 2}deg) rotateX(${direction * -3}deg)`, offset: .5 },
     { transform: `translateZ(${leafZ}px) rotateY(${end}deg) rotateX(0deg)`, offset: 1 },
   ], { duration, easing: 'cubic-bezier(.25,.65,.25,1)', fill: 'forwards' });
+  const animations = [animation, ...bend.animations];
+  const startTime = document.timeline.currentTime;
+  animations.forEach((item) => { item.startTime = startTime; });
+  const active = { old, target, direction, animations, reversed: false, speed: paging.speed, desiredSpeed: 1, frame: null };
+  paging.active = active;
   state.turn = animation;
+  retimePageTurn();
   try { await animation.finished; } catch { /* Layout changes may finish a turn early. */ }
-  state.cursor = Math.floor(target / step()) * step();
+  cancelAnimationFrame(active.frame);
+  paging.active = null;
+  state.cursor = Math.floor((active.reversed ? old : target) / step()) * step();
   ui.leaf.classList.remove('is-turning');
-  clearBend();
+  bend.clear();
   animation.cancel();
   state.turn = null;
   state.busy = false;
@@ -636,7 +729,10 @@ function updateHash(id) {
 async function goToId(id) {
   const index = state.data.pages.findIndex((p) => p.id === id);
   if (index < 0) return;
-  if (state.busy) { await pause(100); return goToId(id); }
+  const request = ++jumpSequence;
+  paging.target = null;
+  while (state.busy) await pause(16);
+  if (request !== jumpSequence) return;
   if (id === 'back') return showBackCover();
   state.cursor = Math.floor(index / step()) * step();
   await openBook({ keepCursor: true });
@@ -787,6 +883,8 @@ function bindEvents() {
     if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
     if (!state.data) return;
+    paging.target = null;
+    jumpSequence++;
     while (state.busy) await pause(60);
     await closeBook();
     window.scrollTo({ top: 0, behavior: reducedMotion.matches ? 'instant' : 'smooth' });
@@ -805,36 +903,29 @@ function bindEvents() {
   $('#close-book').addEventListener('click', closeBook);
   let wheelTotal = 0;
   let lastWheelAt = 0;
-  let wheelLocked = false;
+  let wheelScrolledText = false;
   ui.experience.addEventListener('wheel', (event) => {
     if (!state.data || event.ctrlKey || document.querySelector('dialog[open]') || Math.abs(event.deltaX) > Math.abs(event.deltaY) || !event.deltaY) return;
     const now = performance.now();
-    if (now - lastWheelAt > 220) { wheelTotal = 0; wheelLocked = false; }
+    if (now - lastWheelAt > 220) { wheelTotal = 0; wheelScrolledText = false; }
     lastWheelAt = now;
     const transcript = event.target.closest('.transcript-scroll');
     if (state.opened && transcript && transcript.scrollHeight > transcript.clientHeight + 1) {
       const canScroll = event.deltaY > 0
         ? transcript.scrollTop + transcript.clientHeight < transcript.scrollHeight - 1
         : transcript.scrollTop > 1;
-      if (canScroll) { wheelLocked = true; return; }
+      if (canScroll) { wheelScrolledText = true; return; }
     }
     event.preventDefault();
-    if (state.busy || wheelLocked) return;
-    wheelTotal += event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? ui.stage.clientHeight : 1);
-    if (Math.abs(wheelTotal) < 45) return;
-    wheelLocked = true;
+    if (wheelScrolledText) return;
+    const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? ui.stage.clientHeight : 1);
+    if (Math.sign(delta) !== Math.sign(wheelTotal)) wheelTotal = 0;
+    wheelTotal += delta;
+    // Mouse notches respond immediately; small trackpad deltas accumulate into deliberate turns.
+    if (Math.abs(wheelTotal) < (Math.abs(delta) >= 45 ? 45 : 110)) return;
     const direction = Math.sign(wheelTotal);
     wheelTotal = 0;
-    if (!state.opened) {
-      // Scrolling forward opens the front cover; scrolling back opens the back cover.
-      if ((direction > 0) === backShowing()) return;
-      if (direction > 0) state.cursor = 0;
-      openBook().then(() => { if (state.opened) updateHash(); });
-    } else if (direction < 0 && state.cursor === 0) {
-      closeBook();
-    } else {
-      turnPage(direction);
-    }
+    turnPage(direction);
   }, { passive: false });
   ui.prev.addEventListener('click', () => turnPage(-1));
   ui.next.addEventListener('click', () => turnPage(1));
@@ -894,39 +985,46 @@ function bindEvents() {
     goToId(String(number).padStart(3, '0'));
   });
   ui.range.addEventListener('input', () => {
-    if (state.busy) return;
-    if (Number(ui.range.value) * step() >= backIndex()) return showBackCover();
-    state.cursor = Number(ui.range.value) * step();
-    renderSpread();
-    updateHash();
+    const page = state.data.pages[Number(ui.range.value) * step()];
+    if (page) goToId(page.id);
   });
   document.addEventListener('keydown', (event) => {
     if (['INPUT', 'TEXTAREA'].includes(event.target.tagName) || document.querySelector('dialog[open]')) return;
-    if (state.opened && ['ArrowRight', 'ArrowLeft'].includes(event.key)) {
+    if ((state.opened || paging.running) && ['ArrowRight', 'ArrowLeft'].includes(event.key)) {
       event.preventDefault();
       turnPage(event.key === 'ArrowRight' ? 1 : -1);
     } else if (event.key === 'Escape' && state.opened) closeBook();
   });
   let pointer = null;
   ui.stage.addEventListener('pointerdown', (event) => {
-    if (!state.opened || state.busy || event.button !== 0 || event.target.closest('button')) return;
+    if ((!state.opened && !paging.running) || event.button !== 0 || event.target.closest('button')) return;
     pointer = { x: event.clientX, y: event.clientY, id: event.pointerId };
+  });
+  ui.stage.addEventListener('pointermove', (event) => {
+    if (!pointer || pointer.id !== event.pointerId) return;
+    const dx = event.clientX - pointer.x;
+    const dy = event.clientY - pointer.y;
+    // Keep an established swipe on the stable stage while page contents change underneath it.
+    if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.25) ui.stage.setPointerCapture(event.pointerId);
   });
   ui.stage.addEventListener('pointerup', (event) => {
     if (!pointer || pointer.id !== event.pointerId) return;
     const dx = event.clientX - pointer.x;
     const dy = event.clientY - pointer.y;
     pointer = null;
+    if (ui.stage.hasPointerCapture(event.pointerId)) ui.stage.releasePointerCapture(event.pointerId);
     if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.25) {
       turnPage(dx < 0 ? 1 : -1);
     }
   });
   ui.stage.addEventListener('pointercancel', () => { pointer = null; });
+  ui.stage.addEventListener('lostpointercapture', () => { pointer = null; });
   let resizeTimer;
   const resize = () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
       state.turn?.finish();
+      if (paging.target !== null) paging.target = paging.target < 0 ? -step() : Math.floor(paging.target / step()) * step();
       state.cursor = Math.floor(state.cursor / step()) * step();
       renderSpread();
       if ($('#zoom-dialog').open) renderZoom();
