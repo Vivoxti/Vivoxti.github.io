@@ -9,7 +9,11 @@ const ui = {
   prev: $('#prev-page'), next: $('#next-page'), announcement: $('#announcement'),
 };
 const mobile = matchMedia('(max-width: 700px)');
+const touchInput = matchMedia('(any-pointer: coarse)');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+// Desktop mode changes a tablet's viewport/UA, but its touch hardware still needs a lighter sheet.
+// Keep this independent of step(): a tablet retains the complete two-page spread.
+const lightPageTurn = () => mobile.matches || navigator.maxTouchPoints > 0 || touchInput.matches;
 const state = { data: null, cursor: 0, mode: 'original', opened: false, busy: false, zoomIndex: 0, zoom: 1, turn: null };
 const paging = { target: null, running: false, active: null, preparing: null, speed: 1 };
 const narration = { audio: null, index: null, selecting: false, message: '', messageTimer: null };
@@ -472,7 +476,7 @@ function bendLeaf(duration, direction, easing) {
   const size = getComputedStyle(ui.leaf);
   const width = parseFloat(size.width);
   const height = parseFloat(size.height);
-  const count = mobile.matches ? 12 : 18;
+  const count = 18;
   const segment = width / count;
   const skin = document.createElement('div');
   skin.className = 'curve-skin';
@@ -696,6 +700,12 @@ function animateRibbon(time) {
   if (!ribbonVisible || document.hidden || reducedMotion.matches) { ribbonFrame = null; return; }
   const dt = Math.min((time - (ribbonLastTime || time)) / 1000, .033);
   ribbonLastTime = time;
+  // SVG path edits and movement of the whole 3D book compete with the turning sheet on touch GPUs.
+  // Hold the current pose through the run; resume from it without a time or position jump.
+  if (paging.running && lightPageTurn()) {
+    ribbonFrame = requestAnimationFrame(animateRibbon);
+    return;
+  }
   const breeze = Math.sin(time / 1000 * Math.PI * 2 / 7) * .45;
   ribbonLinks.forEach((link, index) => {
     const parentAngle = index ? ribbonLinks[index - 1].angle : breeze;
@@ -893,7 +903,7 @@ const bezierInverse = (points, progress) => {
 const easingCss = (name) => `cubic-bezier(${TURN_EASINGS[name].join(',')})`;
 const landingEasing = (direction) => mobile.matches && direction > 0 ? 'glide' : 'settle';
 
-// The rigid phone sheet darkens as it stands up, turning away from the light.
+// The rigid touch-device sheet darkens as it stands up, turning away from the light.
 function shadeLeaf(duration, easing, upright) {
   return [ui.front, ui.back].map((surface) => {
     const shade = document.createElement('div');
@@ -996,6 +1006,7 @@ async function animatePageTurn(direction) {
   const pages = state.data.pages;
   const old = state.cursor;
   const compact = mobile.matches;
+  const light = lightPageTurn();
   const surfaces = direction > 0
     ? [[ui.front, pages[old + (compact ? 0 : 1)], old + (compact ? 0 : 1)],
       [ui.back, compact ? null : pages[target], target],
@@ -1037,11 +1048,11 @@ async function animatePageTurn(direction) {
   // A forward phone sheet stands upright late: past that point it is hidden behind the spine.
   const upright = compact && direction > 0 ? .65 : .5;
   // A run of sheets skips the curl: dozens of image strips per sheet would stall the next one.
-  // Phones always turn a rigid sheet: two dozen page copies in 3D are too heavy for a phone GPU.
+  // Touch devices use a rigid sheet at every viewport width, including tablet desktop mode.
   const runs = paging.target !== null && Math.abs(paging.target - target) > 0 && Math.sign(paging.target - target) === direction;
   const easing = runs ? 'flow' : landingEasing(direction);
-  const bend = reducedMotion.matches || runs || compact ? { animations: [], clear() {} } : bendLeaf(duration, direction, easingCss(easing));
-  if (compact && !reducedMotion.matches) bend.animations.push(...shadeLeaf(duration, easingCss(easing), upright));
+  const bend = reducedMotion.matches || runs || light ? { animations: [], clear() {} } : bendLeaf(duration, direction, easingCss(easing));
+  if (light && !reducedMotion.matches) bend.animations.push(...shadeLeaf(duration, easingCss(easing), upright));
   const start = direction > 0 ? 0 : -180;
   const end = direction > 0 ? -180 : 0;
   // Each face sits .6px above the hinge. At both ends its visible plane matches the static page exactly.
