@@ -1425,35 +1425,46 @@ function bindEvents() {
     } else if (event.key === 'Escape' && state.opened) closeBook();
   });
   let pointer = null;
-  ui.stage.addEventListener('pointerdown', (event) => {
-    if ((!state.opened && !paging.running) || event.button !== 0 || event.target.closest('button')) return;
-    pointer = { x: event.clientX, y: event.clientY, id: event.pointerId };
-  });
-  ui.stage.addEventListener('pointermove', (event) => {
-    if (!pointer || pointer.id !== event.pointerId) return;
+  const swipeDistance = 20;
+  const trackSwipe = (event) => {
+    if (!pointer || pointer.id !== event.pointerId || pointer.turned || pointer.axis === 'vertical') return;
     const dx = event.clientX - pointer.x;
     const dy = event.clientY - pointer.y;
-    if (pointer.turned || Math.abs(dx) < 12 || Math.abs(dx) < Math.abs(dy) * 1.25) return;
-    // Keep an established swipe on the stable stage while page contents change underneath it.
-    try { if (!ui.stage.hasPointerCapture(event.pointerId)) ui.stage.setPointerCapture(event.pointerId); } catch { /* The pointer may already be gone. */ }
-    // Turn while the finger is still moving, so the sheet answers the swipe at once.
-    if (Math.abs(dx) > 32) {
+    if (!pointer.axis) {
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 10) return;
+      // Leave vertical gestures to native scrolling; a slightly diagonal swipe is enough to turn.
+      if (Math.abs(dy) > Math.abs(dx) * 1.15) { pointer.axis = 'vertical'; return; }
+      if (Math.abs(dx) <= Math.abs(dy)) return;
+      pointer.axis = 'horizontal';
+      // Capture on the stable stage, since the page contents change as soon as a turn starts.
+      try { ui.stage.setPointerCapture(event.pointerId); } catch { /* A quick flick may already have ended. */ }
+    }
+    if (Math.abs(dx) >= swipeDistance) {
       pointer.turned = true;
       turnPage(dx < 0 ? 1 : -1);
     }
+  };
+  ui.stage.addEventListener('pointerdown', (event) => {
+    if ((!state.opened && !paging.running) || event.button !== 0 || !event.isPrimary || pointer
+      || document.querySelector('dialog[open]') || event.target.closest('button')) return;
+    pointer = { x: event.clientX, y: event.clientY, id: event.pointerId };
   });
+  ui.stage.addEventListener('pointermove', trackSwipe);
   ui.stage.addEventListener('pointerup', (event) => {
     if (!pointer || pointer.id !== event.pointerId) return;
-    const dx = event.clientX - pointer.x;
-    const dy = event.clientY - pointer.y;
-    const turned = pointer.turned;
+    // A quick flick can end before a move event crosses the threshold.
+    trackSwipe(event);
     pointer = null;
     if (ui.stage.hasPointerCapture(event.pointerId)) ui.stage.releasePointerCapture(event.pointerId);
-    // A quick flick can end before a move event crosses the threshold.
-    if (!turned && Math.abs(dx) > 24 && Math.abs(dx) > Math.abs(dy) * 1.25) turnPage(dx < 0 ? 1 : -1);
   });
-  ui.stage.addEventListener('pointercancel', () => { pointer = null; });
-  ui.stage.addEventListener('lostpointercapture', () => { pointer = null; });
+  ui.stage.addEventListener('pointercancel', (event) => {
+    if (pointer?.id === event.pointerId) pointer = null;
+  });
+  ui.stage.addEventListener('lostpointercapture', (event) => {
+    // Touch capture initially belongs to the touched page. Its bubbling loss during transfer
+    // to the stage is expected and must not discard the swipe (in either direction).
+    if (event.target === ui.stage && pointer?.id === event.pointerId) pointer = null;
+  });
   let resizeTimer;
   const resize = () => {
     clearTimeout(resizeTimer);
