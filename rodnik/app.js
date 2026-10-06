@@ -1001,7 +1001,9 @@ async function animatePageTurn(direction) {
       [ui.back, compact ? null : pages[target], target],
       [ui.right, pages[target + (compact ? 0 : 1)], target + (compact ? 0 : 1)]]
     : [[ui.front, pages[target + (compact ? 0 : 1)], target + (compact ? 0 : 1)],
-      [ui.back, pages[old], old], [compact ? ui.right : ui.left, pages[target], target]];
+      [ui.back, pages[old], old],
+      // A phone keeps the current page under the incoming sheet; the sheet itself hands over the new page on landing.
+      ...(compact ? [] : [[ui.left, pages[target], target]])];
   let cancel;
   const cancelled = new Promise(resolve => { cancel = () => resolve(null); });
   const preparing = { old, direction, indices: [...new Set([old, ...surfaces.map(([, , index]) => index)])],
