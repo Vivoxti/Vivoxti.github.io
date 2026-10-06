@@ -377,7 +377,7 @@ function updateAudioControl() {
   button.disabled = !playing && (!available || state.busy || paging.running);
   button.classList.toggle('active', playing || narration.selecting);
   button.setAttribute('aria-pressed', String(playing || narration.selecting));
-  const label = playing ? 'Остановить озвучку' : narration.selecting ? 'Отменить выбор страницы' : available ? 'Выбрать страницу для озвучки' : 'Для этих страниц пока нет озвучки';
+  const label = playing ? 'Остановить озвучку' : narration.selecting ? 'Отменить выбор страницы' : available ? (step() === 1 ? 'Слушать страницу' : 'Выбрать страницу для озвучки') : 'Для этих страниц пока нет озвучки';
   button.setAttribute('aria-label', label);
   button.title = label;
   button.querySelector('.audio-listen-icon').toggleAttribute('hidden', playing);
@@ -1344,6 +1344,8 @@ function bindEvents() {
     if (narration.audio) return stopNarration();
     clearTimeout(narration.messageTimer);
     narration.message = '';
+    // With a single visible page there is nothing to choose: play it at once.
+    if (step() === 1) return playNarration(state.cursor);
     narration.selecting = !narration.selecting;
     updateAudioControl();
   });
